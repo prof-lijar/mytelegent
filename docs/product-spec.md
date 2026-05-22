@@ -1,60 +1,50 @@
-# Tiny Jarvis Product Specification
+# Product Specification
+
+## Core Features
+
+1. **Natural Language Parsing**
+   - Input format: `"Tell [Name] [time] that [message]"`
+   - Supported time formats: absolute ("May 23 at 3 PM") and relative ("tomorrow at 9 AM")
+   - Output format: Structured JSON with `recipient`, `scheduled_time`, `message` fields
+
+2. **Local Processing Stack**
+   - Gemma/LLM via Ollama for parsing
+   - Pydantic for data validation
+   - SQLite for persistent storage
+
+3. **Telegram Integration**
+   - Telethon-based userbot
+   - Random 2-5s delay before sending
+   - Max 2 retries with exponential backoff
+
+4. **Scheduler**
+   - APScheduler background task
+   - Status tracking (scheduled/pending/failure)
+
+5. **Security**
+   - No cloud dependencies
+   - Secrets masked in logs
+   - Mock-based testing only
 
 ## Technical Requirements
 
-**Core Stack**:
 - Python 3.11+
-- Pydantic for data validation
-- SQLite for local storage
-- APScheduler for task scheduling
-- Telethon for Telegram integration
-- Ollama/OpenAI-compatible LLM (Gemma 2B/7B)
-- python-dotenv for config management
-
-**Safety Requirements**:
-- No mass messaging (1 command = 1 message)
-- 2-5s random delay before sends
-- Max 2 retries per message
-- No logging of Telegram API keys
-- Explicit user confirmation required
-
-## System Architecture
-
-```
-[CLI] → [LLM Parser] → [Pydantic Validation] → [SQLite Storage] → [Scheduler] → [Telegram Send]
-```
-
-1. **CLI Interface**: Accepts natural language commands
-2. **LLM Parser**: Uses local Gemma model via Ollama to extract structured JSON
-3. **Validation Layer**: Pydantic models enforce schema
-4. **Storage**: SQLite database tracks scheduled messages
-5. **Scheduler**: APScheduler triggers at specified times
-6. **Telegram**: Telethon userbot sends messages with delay
-
-## Module Breakdown
-
-| Module | Responsibility | Dependencies |
-|--------|----------------|--------------|
-| config | Load .env variables | python-dotenv |
-| models | Pydantic schemas |  |
-| db_tool | SQLite CRUD operations |  |
-| llm_tool | Ollama API wrapper |  |
-| parser | NLP → structured JSON | llm_tool, models |
-| telegram_tool | Telethon send with delay |  |
-| scheduler | APScheduler background loop | db_tool |
-| cli | Main entry point | parser, scheduler |
-| logging | Activity/error logs |  |
+- pyproject.toml with exact version pins
+- Type hints throughout
+- Unit tests for all modules
 
 ## Development Phases
 
-1. **Discovery** (Complete)
-2. **Architecture**: Design patterns, directory structure
-3. **Development**: Module implementation
-4. **Quality**: Testing, PR reviews
-5. **Iteration**: Refinement, new features
+1. Architecture design
+2. Core module implementation (LLM, DB, Telegram)
+3. Scheduler and CLI
+4. End-to-end validation
+5. Security review
 
-## Acceptance Criteria
-- All modules must have unit tests
-- End-to-end test with mock Telegram
+## Success Metrics
+
 - 100% test coverage for critical paths
-- No security vulnerabilities in dependencies
+- Zero Telegram message failures in testing
+- 50+ unit tests
+- Complete API documentation
+- No open P0-critical issues
