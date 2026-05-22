@@ -1,7 +1,9 @@
 {
-  "cycle_reasoning": "Project is now in architecture phase; architect needs to design system and initialize Python project structure",
-  "current_phase": "architecture",
+  "cycle_reasoning": "Review core infrastructure PR and start implementing the Parsing Agent.",
+  "current_phase": "development",
   "assignments": [
-    {"role": "architect", "turns": 2, "priority": "P0"}
+    {"role": "qa", "turns": 2, "priority": "P0"},
+    {"role": "architect", "turns": 1, "priority": "P1"},
+    {"role": "backend", "turns": 3, "priority": "P0"}
   ]
 }
