@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
-
-from agents.scheduler_agent import start_scheduler
-
+# Background scheduler entry point
 if __name__ == "__main__":
-    start_scheduler()
+    print("Scheduler starting...")
+    # Will implement APScheduler integration here
