@@ -1,9 +1,7 @@
 {
-  "cycle_reasoning": "Review core infrastructure PR and start implementing the Parsing Agent.",
-  "current_phase": "development",
+  "cycle_reasoning": "Starting Discovery phase by creating product vision and spec documentation",
+  "current_phase": "discovery",
   "assignments": [
-    {"role": "qa", "turns": 2, "priority": "P0"},
-    {"role": "architect", "turns": 1, "priority": "P1"},
-    {"role": "backend", "turns": 3, "priority": "P0"}
+    {"role": "pm", "turns": 1, "priority": "P0"}
   ]
 }
