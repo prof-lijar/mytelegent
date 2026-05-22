@@ -14,9 +14,10 @@ class LocalLLMTool:
         self.client = OpenAI(
             base_url=Config.LOCAL_LLM_BASE_URL,
             api_key=Config.LOCAL_LLM_API_KEY,
+            timeout=30.0,
         )
 
-    def generate_response(self, system_prompt: str, user_prompt: str) -> str:
+    def call_local_llm(self, system_prompt: str, user_prompt: str) -> str:
         """
         Generate a response from the local LLM.
         
@@ -49,7 +50,7 @@ if __name__ == "__main__":
     sys_prompt = "You are a helpful assistant."
     user_prompt = "Hello, who are you?"
     try:
-        result = llm.generate_response(sys_prompt, user_prompt)
+        result = llm.call_local_llm(sys_prompt, user_prompt)
         print(f"Response: {result}")
     except Exception as e:
         print(f"Error during test: {e}")

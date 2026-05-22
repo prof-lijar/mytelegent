@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional
 
@@ -28,7 +28,7 @@ def initialize_database() -> None:
                     sent_at TEXT,
                     error_message TEXT
                 )
-                """
+                """,
             )
     finally:
         conn.close()
@@ -50,7 +50,7 @@ def insert_scheduled_message(parsed_command: ScheduledMessage) -> int:
                     parsed_command.scheduled_time.isoformat(),
                     parsed_command.message,
                     "pending",
-                    datetime.utcnow().isoformat(),
+                    datetime.now(timezone.utc).isoformat(),
                 ),
             )
             return cursor.lastrowid
@@ -112,7 +112,7 @@ def mark_sent(message_id: int) -> None:
         with conn:
             conn.execute(
                 "UPDATE scheduled_messages SET status = ?, sent_at = ? WHERE id = ?",
-                ("sent", datetime.utcnow().isoformat(), message_id),
+                ("sent", datetime.now(timezone.utc).isoformat(), message_id),
             )
     finally:
         conn.close()

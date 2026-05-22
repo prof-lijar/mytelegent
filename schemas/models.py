@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
@@ -21,6 +21,6 @@ class ScheduledMessage(BaseModel):
     message: str
     status: Literal["pending", "processing", "sent", "failed", "cancelled"] = "pending"
     retry_count: int = 0
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     sent_at: Optional[datetime] = None
     error_message: Optional[str] = None
