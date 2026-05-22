@@ -122,8 +122,10 @@ def list_pending_messages() -> List[ScheduledMessage]:
     """List all pending messages."""
     with get_db_connection() as conn:
         cursor = conn.execute(
-            """SELECT id, target, target_type, scheduled_time, message, status, 
+            '''
+            SELECT id, target, target_type, scheduled_time, message, status, 
                    retry_count, created_at, sent_at, error_message 
-                   FROM scheduled_messages WHERE status = 'pending'""",
+            FROM scheduled_messages WHERE status = 'pending'
+            ''',
         )
         return [_row_to_scheduled_message(row) for row in cursor.fetchall()]
