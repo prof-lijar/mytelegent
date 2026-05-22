@@ -1,3 +1,20 @@
 # Tiny Jarvis Vision
 
-A personal AI assistant that integrates natural language processing, local execution, and secure messaging to provide a private, efficient, and customizable automation solution for individual users. The system prioritizes user control, data privacy, and zero-trust architecture while maintaining seamless integration with modern communication platforms like Telegram.
+## Mission Statement
+Tiny Jarvis is a local personal AI agent designed to simplify task automation and communication scheduling for individual users. It prioritizes privacy, reliability, and seamless integration with existing tools like Telegram.
+
+## Core Capabilities
+1. Natural language parsing of scheduling commands
+2. Local AI processing with Ollama-compatible models
+3. Secure Telegram message scheduling
+4. Robust error handling and retry logic
+
+## Target User
+- Busy professionals needing to schedule messages
+- Privacy-conscious individuals
+- Developers looking for local AI automation tools
+
+## Key Principles
+- Zero-cloud dependency
+- Maximum message scheduling accuracy
+- Fail-safe operation with retry limits
