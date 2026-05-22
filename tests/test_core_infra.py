@@ -1,16 +1,16 @@
 from tools.config import Config
 from tools.db_tool import initialize_database, insert_scheduled_message, get_due_messages, list_pending_messages
-from schemas.models import ScheduledMessage
-from datetime import datetime, timedelta
+from schemas.models import ScheduledMessage, ParsedMessageCommand
+from datetime import datetime, timedelta, timezone
 
 def test_db():
     print("Testing DB Tool...")
     initialize_database()
     
-    msg = ScheduledMessage(
+    msg = ParsedMessageCommand(
         target="test_user",
         target_type="username",
-        scheduled_time=datetime.utcnow() - timedelta(minutes=1),
+        scheduled_time=datetime.now(timezone.utc) - timedelta(minutes=1),
         message="Hello Test!",
         confidence=1.0
     )
@@ -21,7 +21,7 @@ def test_db():
     pending = list_pending_messages()
     print(f"Pending messages count: {len(pending)}")
     
-    due = get_due_messages(datetime.utcnow())
+    due = get_due_messages(datetime.now(timezone.utc))
     print(f"Due messages count: {len(due)}")
     
     assert len(pending) > 0

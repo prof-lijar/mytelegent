@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from tools.config import Config
-from schemas.models import ScheduledMessage
+from schemas.models import ScheduledMessage, ParsedMessageCommand
 
 def initialize_database() -> None:
     """Initialize the SQLite database and create tables."""
@@ -33,7 +33,7 @@ def initialize_database() -> None:
     finally:
         conn.close()
 
-def insert_scheduled_message(parsed_command: ScheduledMessage) -> int:
+def insert_scheduled_message(parsed_command: ParsedMessageCommand) -> int:
     """Insert a scheduled message into the database."""
     conn = sqlite3.connect(Config.SQLITE_DB_PATH)
     try:
