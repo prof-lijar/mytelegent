@@ -1,9 +1,9 @@
 {
-  "cycle_reasoning": "Starting with architecture design as the first step after defining vision and spec.",
-  "current_phase": "architecture",
+  "cycle_reasoning": "Development phase: Backend is implementing parsing agent and core infrastructure PR is pending review/merge",
+  "current_phase": "development",
   "assignments": [
-    {"role": "architect", "turns": 2, "priority": "P0"},
-    {"role": "backend", "turns": 0, "priority": "P2"},
-    {"role": "qa", "turns": 0, "priority": "P2"}
+    {"role": "backend", "turns": 4, "priority": "P0"},
+    {"role": "qa", "turns": 1, "priority": "P1"},
+    {"role": "architect", "turns": 1, "priority": "P1"}
   ]
 }
