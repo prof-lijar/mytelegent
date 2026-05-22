@@ -1,28 +1,29 @@
 # Project Progress
 
 ## Current Phase
-Architecture - The team is now designing the system and initializing the Python project structure.
+Development — Implementing core modules based on the architecture.
 
 ## What Was Completed This Cycle
-- Created product vision document (docs/vision.md)
-- Created product specification document (docs/product-spec.md)
-- Closed issue #9 (product documentation)
+- Core infrastructure implemented (Config, Models, DB Tool, LLM Tool) and submitted in PR #6.
+- Project structure initialized.
 
 ## What Is In Progress
-- None
+- PR #6: Core Infrastructure implementation (awaiting QA review)
+- Issue #8: Implementing Parsing Agent (NL → Structured JSON)
 
 ## What Is Blocked
 - None
 
 ## Next Cycle Plan
-- Architect will create system architecture documentation
-- Initialize Python project structure with core modules
+- QA to review PR #6.
+- Architect to merge PR #6 upon approval.
+- Backend to continue work on the Parsing Agent (Issue #8).
 
 ## Module Checklist
-- [ ] Config loader (.env, python-dotenv)
-- [ ] Pydantic models (ParsedMessageCommand, ScheduledMessage)
-- [ ] SQLite db_tool (CRUD for scheduled_messages)
-- [ ] Local LLM tool (Ollama/OpenAI-compatible)
+- [x] Config loader (.env, python-dotenv)
+- [x] Pydantic models (ParsedMessageCommand, ScheduledMessage)
+- [x] SQLite db_tool (CRUD for scheduled_messages)
+- [x] Local LLM tool (Ollama/OpenAI-compatible)
 - [ ] Parsing agent (NL → structured JSON)
 - [ ] Telegram tool (Telethon send with delay)
 - [ ] Scheduler agent (APScheduler background loop)
