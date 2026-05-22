@@ -14,14 +14,14 @@ from tools.db_tool import (
 from schemas.models import ParsedMessageCommand
 
 def test_db_lifecycle():
-    \"\"\"Test the full lifecycle of a scheduled message in the database.\"\"\"
+    """Test the full lifecycle of a scheduled message in the database."""
     initialize_database()
     
     msg = ParsedMessageCommand(
-        target=\"test_user\",
-        target_type=\"username\",
+        target="test_user",
+        target_type="username",
         scheduled_time=datetime.now(timezone.utc) - timedelta(minutes=1),
-        message=\"Hello Lifecycle Test!\",
+        message="Hello Lifecycle Test!",
         confidence=1.0
     )
     
@@ -45,23 +45,23 @@ def test_db_lifecycle():
     assert not any(m.id == msg_id for m in due_after_sent)
 
 def test_db_failure_retry():
-    \"\"\"Test marking a message as failed and checking retry count.\"\"\"
+    """Test marking a message as failed and checking retry count."""
     initialize_database()
     
     msg = ParsedMessageCommand(
-        target=\"fail_user\",
-        target_type=\"phone\",
+        target="fail_user",
+        target_type="phone",
         scheduled_time=datetime.now(timezone.utc) - timedelta(minutes=1),
-        message=\"Fail Test\",
+        message="Fail Test",
         confidence=0.9
     )
     msg_id = insert_scheduled_message(msg)
     
-    mark_failed(msg_id, \"Connection timeout\")
+    mark_failed(msg_id, "Connection timeout")
     
     pending = list_pending_messages()
     assert not any(m.id == msg_id for m in pending)
 
-if __name__ == \"__main__\":
+if __name__ == "__main__":
     test_db_lifecycle()
     test_db_failure_retry()
