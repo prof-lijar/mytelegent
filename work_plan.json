@@ -1,9 +1,9 @@
 {
-  "cycle_reasoning": "Focusing on development of parsing agent and reviewing core infrastructure PR",
+  "cycle_reasoning": "Prioritize QA review of core infrastructure PR #6 and continue backend work on parsing agent (P0-critical)",
   "current_phase": "development",
   "assignments": [
-    {"role": "backend", "turns": 3, "priority": "P0"},
-    {"role": "qa", "turns": 2, "priority": "P1"},
-    {"role": "architect", "turns": 1, "priority": "P2"}
+    {"role": "qa", "turns": 2, "priority": "P1-high"},
+    {"role": "backend", "turns": 3, "priority": "P0-critical"},
+    {"role": "architect", "turns": 1, "priority": "P2-medium"}
   ]
 }
