@@ -1,7 +1,9 @@
 {
-  "cycle_reasoning": "Starting Discovery phase by creating product vision and spec documentation",
-  "current_phase": "discovery",
+  "cycle_reasoning": "Starting with architecture design as the first step after defining vision and spec.",
+  "current_phase": "architecture",
   "assignments": [
-    {"role": "pm", "turns": 1, "priority": "P0"}
+    {"role": "architect", "turns": 2, "priority": "P0"},
+    {"role": "backend", "turns": 0, "priority": "P2"},
+    {"role": "qa", "turns": 0, "priority": "P2"}
   ]
 }
