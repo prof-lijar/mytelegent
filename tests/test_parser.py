@@ -1,52 +1,34 @@
-import unittest
-from unittest.mock import patch, MagicMock
+import pytest
+from unittest.mock import patch, Mock
+from agents.parsing_agent import parse_command, ParsingError
+from datetime import datetime
+from pydantic import ValidationError
 
-from agents.parser import MessageParser, ParsingError
-from schemas.models import ParsedMessageCommand
+
+def test_valid_command_parsing():
+    mock_response = '{"target": "John", "target_type": "name", "scheduled_time": "2026-05-23T14:30:00+09:00", "message": "Hello"}'
+    
+    with patch("agents.parsing_agent.call_local_llm", return_value=mock_response):
+        result = parse_command("Send 'Hello' to John via name at 2 PM tomorrow")
+        assert result.target == "John"
+        assert result.target_type == "name"
+        assert result.scheduled_time == datetime.fromisoformat("2026-05-23T14:30:00+09:00")
+        assert result.message == "Hello"
 
 
-class TestMessageParser(unittest.TestCase):
-    """Test suite for the MessageParser class"""
+def test_invalid_json_parsing():
+    mock_response = "{invalid: json}"
+    with patch("agents.parsing_agent.call_local_llm", return_value=mock_response), pytest.raises(ParsingError):
+        parse_command("Invalid command")
 
-    def setUp(self):
-        self.parser = MessageParser()
+def test_validation_error():
+    mock_response = '{"target": 123, "target_type": "name", "scheduled_time": "invalid-date", "message": "Hello"}'
+    with patch("agents.parsing_agent.call_local_llm", return_value=mock_response), pytest.raises(ParsingError):
+        parse_command("Invalid command")
 
-    @patch('agents.parser.LocalLLMTool')
-    def test_valid_parsing(self, mock_llm):
-        """Test successful parsing of a valid command"""
-        # Arrange
-        mock_response = '{"target": "John Doe", "target_type": "name", "scheduled_time": "2026-05-23T09:00:00+09:00", "message": "Good morning"}'
-        mock_llm.return_value.call_local_llm.return_value = mock_response
+def test_empty_input():
+    with pytest.raises(ParsingError):
+        parse_command("")
 
-        # Act
-        result = self.parser.parse("Send 'Good morning' to John Doe tomorrow at 9am")
-
-        # Assert
-        self.assertIsInstance(result, ParsedMessageCommand)
-        self.assertEqual(result.target, "John Doe")
-        self.assertEqual(result.message, "Good morning")
-
-    @patch('agents.parser.LocalLLMTool')
-    def test_invalid_json(self, mock_llm):
-        """Test parsing failure due to invalid JSON from LLM"""
-        # Arrange
-        mock_response = '{invalid: json}'
-        mock_llm.return_value.call_local_llm.return_value = mock_response
-
-        # Act & Assert
-        with self.assertRaises(ParsingError):
-            self.parser.parse("Send test message")
-
-    @patch('agents.parser.LocalLLMTool')
-    def test_llm_error_response(self, mock_llm):
-        """Test LLM returns explicit error in response"""
-        # Arrange
-        error_response = '{"error": "Could not parse time expression"}'
-        mock_llm.return_value.call_local_llm.return_value = error_response
-
-        # Act & Assert
-        with self.assertRaises(ParsingError):
-            self.parser.parse("Invalid command with bad time format")
-
-if __name__ == '__main__':
-    unittest.main()
+if __name__ == "__main__":
+    pytest.main()
