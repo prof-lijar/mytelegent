@@ -1,27 +1,27 @@
 # Project Progress
 
 ## Current Phase
-discovery — Product vision and specification have been defined.
+development — Implementing the core infrastructure and AI agent modules.
 
 ## What Was Completed This Cycle
-- Created `docs/vision.md`
-- Created `docs/product-spec.md`
-- Created issue #2 for the Architect to design the architecture and initialize the project skeleton.
+- Closed Issue #2: Architecture designed and project skeleton initialized.
+- Created Issue #3: Implementation of Core Infrastructure (Config, DB, LLM Tools).
 
 ## What Is In Progress
-- Issue #1: Define Product Vision & Spec (Closing now)
-- Issue #2: [ARCH] Design System Architecture & Project Initialization
+- Issue #3: [BACKEND] Implement Core Infrastructure (Config, DB, LLM Tools)
 
 ## What Is Blocked
 - None
 
 ## Next Cycle Plan
-- Assign the Architect to start the design and project initialization.
+- Backend will implement the Config, DB, and LLM tools.
+- Once infrastructure is ready, we will proceed to the Parsing Agent.
 
 ## Module Checklist
 - [ ] Config loader (.env, python-dotenv)
 - [ ] Pydantic models (ParsedMessageCommand, ScheduledMessage)
-- [ ] Payload DB tool (SQLite)
+- [x] Pydantic models (Initial schemas defined)
+- [ ] SQLite db_tool (CRUD for scheduled_messages)
 - [ ] Local LLM tool (Ollama/OpenAI-compatible)
 - [ ] Parsing agent (NL → structured JSON)
 - [ ] Telegram tool (Telethon send with delay)
