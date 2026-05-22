@@ -1,8 +1,9 @@
 {
-  "cycle_reasoning": "Resolve the conflict on PR #6 and merge core infrastructure, then start implementation of the Parsing Agent.",
+  "cycle_reasoning": "Architect needs to finalize core infra, QA needs to review the parsing agent, and Backend moves to the Telegram tool.",
   "current_phase": "development",
   "assignments": [
-    {"role": "architect", "turns": 2, "priority": "P0"},
+    {"role": "architect", "turns": 1, "priority": "P0"},
+    {"role": "qa", "turns": 2, "priority": "P0"},
     {"role": "backend", "turns": 3, "priority": "P0"}
   ]
 }
