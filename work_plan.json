@@ -1,9 +1,9 @@
 {
-  "cycle_reasoning": "Review and merge core infrastructure PR, then begin implementation of the Parsing Agent.",
+  "cycle_reasoning": "Prioritizing the review of core infrastructure and the implementation of the Parsing Agent to move forward in the development phase.",
   "current_phase": "development",
   "assignments": [
-    {"role": "qa", "turns": 2, "priority": "P0"},
-    {"role": "architect", "turns": 1, "priority": "P1"},
-    {"role": "backend", "turns": 3, "priority": "P0"}
+    {"role": "qa", "turns": 2, "priority": "P1"},
+    {"role": "backend", "turns": 3, "priority": "P0"},
+    {"role": "architect", "turns": 1, "priority": "P1"}
   ]
 }

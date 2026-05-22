@@ -1,24 +1,24 @@
 # Project Progress
 
 ## Current Phase
-Development — Implementing core modules based on the architecture.
+Development — Implementing core modules and reviewing infrastructure.
 
 ## What Was Completed This Cycle
-- Closed redundant Issue #11 (work is in PR #6).
-- Created Issue #12 for the Parsing Agent.
-- Defined work plan for the next cycle focusing on PR #6 review and Parsing Agent development.
+- Identified that Parsing Agent implementation (Issue #12) was missing from the codebase.
+- Re-created Issue #14 for the Parsing Agent implementation.
+- Updated work plan to assign QA for PR #6 review and Backend for Issue #14.
 
 ## What Is In Progress
-- PR #6: Core Infrastructure implementation (awaiting QA review)
-- Issue #12: Implementing Parsing Agent (NL → Structured JSON)
+- PR #6: Core Infrastructure implementation (awaiting QA review / Issue #13)
+- Issue #14: Implementing Parsing Agent (NL → Structured JSON)
 
 ## What Is Blocked
 - None
 
 ## Next Cycle Plan
-- QA to review PR #6.
+- QA to review and approve PR #6.
 - Architect to merge PR #6 upon approval.
-- Backend to implement the Parsing Agent (Issue #12).
+- Backend to implement the Parsing Agent (Issue #14).
 
 ## Module Checklist
 - [x] Config loader (.env, python-dotenv)
