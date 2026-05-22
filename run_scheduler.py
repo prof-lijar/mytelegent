@@ -1,8 +1,6 @@
-# Tiny Jarvis Scheduler
-# Background process: poll -> send -> update
+#!/usr/bin/env python3
 
-def run_scheduler():
-    print("Tiny Jarvis Scheduler - Coming Soon")
+from agents.scheduler_agent import start_scheduler
 
 if __name__ == "__main__":
-    run_scheduler()
+    start_scheduler()
