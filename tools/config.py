@@ -35,6 +35,14 @@ class Config:
             )
 
     @classmethod
+    def validate_llm_config(cls) -> None:
+        """Validate that required LLM environment variables are set."""
+        if not cls.LOCAL_LLM_BASE_URL or not cls.LOCAL_LLM_MODEL:
+            raise EnvironmentError(
+                "LOCAL_LLM_BASE_URL and LOCAL_LLM_MODEL must be set in the environment."
+            )
+
+    @classmethod
     def ensure_db_dir(cls) -> None:
         """Ensure the directory for the SQLite database exists."""
         db_path = Path(cls.DB_PATH)
