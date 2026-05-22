@@ -1,0 +1,18 @@
+[project]
+name = "product-repo"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.11, <3.14"
+dependencies = [
+    "apscheduler>=3.11.2",
+    "openai>=2.24.0",
+    "pydantic>=2.12.5",
+    "python-dotenv>=1.2.2",
+    "telethon>=1.43.2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.23.0",
+]
