@@ -4,13 +4,13 @@
 Development - The team is building core modules and reviewing initial implementations.
 
 ## What Was Completed This Cycle
-- Created issue #13 for QA review of PR #6 (core infrastructure)
-- Assigned backend to implement parsing agent
+- Created issue #15 for QA review of PR #6 (core infrastructure)
+- Updated work_plan.json with QA/backend/architect assignments
 
 ## What Is In Progress
 - [PR #6] Core infrastructure implementation (config, DB, LLM tools)
-- [Issue #12] Parsing agent implementation
-- [Issue #13] QA review of core infrastructure PR
+- [Issue #14] Parsing agent implementation
+- [Issue #15] QA review of core infrastructure PR
 
 ## What Is Blocked
 - None
@@ -21,10 +21,10 @@ Development - The team is building core modules and reviewing initial implementa
 - Architect will prepare for PR merge review
 
 ## Module Checklist
-- [ ] Config loader (.env, python-dotenv)
+- [x] Config loader (.env, python-dotenv)
 - [ ] Pydantic models (ParsedMessageCommand, ScheduledMessage)
-- [ ] SQLite db_tool (CRUD for scheduled_messages)
-- [ ] Local LLM tool (Ollama/OpenAI-compatible)
+- [x] SQLite db_tool (CRUD for scheduled_messages)
+- [x] Local LLM tool (Ollama/OpenAI-compatible)
 - [ ] Parsing agent (NL → structured JSON)
 - [ ] Telegram tool (Telethon send with delay)
 - [ ] Scheduler agent (APScheduler background loop)
