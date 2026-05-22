@@ -9,13 +9,13 @@ from tools.config import Config
 from schemas.models import ScheduledMessage, ParsedMessageCommand
 
 def initialize_database() -> None:
-    """Initialize the SQLite database and create tables."""
+    '''Initialize the SQLite database and create tables.'''
     Config.ensure_db_dir()
-    conn = sqlite3.connect(Config.SQLITE_DB_PATH)
+    conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
             conn.execute(
-                """
+                '''
                 CREATE TABLE IF NOT EXISTS scheduled_messages (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     target TEXT NOT NULL,
@@ -28,28 +28,28 @@ def initialize_database() -> None:
                     sent_at TEXT,
                     error_message TEXT
                 )
-                """,
+                ''',
             )
     finally:
         conn.close()
 
 def insert_scheduled_message(parsed_command: ParsedMessageCommand) -> int:
-    """Insert a scheduled message into the database."""
-    conn = sqlite3.connect(Config.SQLITE_DB_PATH)
+    '''Insert a scheduled message into the database.'''
+    conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
             cursor = conn.execute(
-                """
+                '''
                 INSERT INTO scheduled_messages (
                     target, target_type, scheduled_time, message, status, created_at
                 ) VALUES (?, ?, ?, ?, ?, ?)
-                """,
+                ''',
                 (
                     parsed_command.target,
                     parsed_command.target_type,
                     parsed_command.scheduled_time.isoformat(),
                     parsed_command.message,
-                    "pending",
+                    'pending',
                     datetime.now(timezone.utc).isoformat(),
                 ),
             )
@@ -58,17 +58,17 @@ def insert_scheduled_message(parsed_command: ParsedMessageCommand) -> int:
         conn.close()
 
 def get_due_messages(now: datetime) -> List[ScheduledMessage]:
-    """Get messages that are due for sending."""
-    conn = sqlite3.connect(Config.SQLITE_DB_PATH)
+    '''Get messages that are due for sending.'''
+    conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
             cursor = conn.execute(
-                """
+                '''
                 SELECT id, target, target_type, scheduled_time, message, status, 
                        retry_count, created_at, sent_at, error_message 
                 FROM scheduled_messages 
                 WHERE status = 'pending' AND scheduled_time <= ?
-                """,
+                ''',
                 (now.isoformat(),),
             )
             rows = cursor.fetchall()
@@ -94,44 +94,44 @@ def get_due_messages(now: datetime) -> List[ScheduledMessage]:
         conn.close()
 
 def mark_processing(message_id: int) -> None:
-    """Mark a message as processing."""
-    conn = sqlite3.connect(Config.SQLITE_DB_PATH)
+    '''Mark a message as processing.'''
+    conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
             conn.execute(
-                "UPDATE scheduled_messages SET status = ? WHERE id = ?",
-                ("processing", message_id),
+                'UPDATE scheduled_messages SET status = ? WHERE id = ?',
+                ('processing', message_id),
             )
     finally:
         conn.close()
 
 def mark_sent(message_id: int) -> None:
-    """Mark a message as sent."""
-    conn = sqlite3.connect(Config.SQLITE_DB_PATH)
+    '''Mark a message as sent.'''
+    conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
             conn.execute(
-                "UPDATE scheduled_messages SET status = ?, sent_at = ? WHERE id = ?",
-                ("sent", datetime.now(timezone.utc).isoformat(), message_id),
+                'UPDATE scheduled_messages SET status = ?, sent_at = ? WHERE id = ?',
+                ('sent', datetime.now(timezone.utc).isoformat(), message_id),
             )
     finally:
         conn.close()
 
 def mark_failed(message_id: int, error: str) -> None:
-    """Mark a message as failed."""
-    conn = sqlite3.connect(Config.SQLITE_DB_PATH)
+    '''Mark a message as failed.'''
+    conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
             conn.execute(
-                "UPDATE scheduled_messages SET status = ?, error_message = ?, retry_count = retry_count + 1 WHERE id = ?",
-                ("failed", error, message_id),
+                'UPDATE scheduled_messages SET status = ?, error_message = ?, retry_count = retry_count + 1 WHERE id = ?',
+                ('failed', error, message_id),
             )
     finally:
         conn.close()
 
 def list_pending_messages() -> List[ScheduledMessage]:
-    """List all pending messages."""
-    conn = sqlite3.connect(Config.SQLITE_DB_PATH)
+    '''List all pending messages.'''
+    conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
             cursor = conn.execute(

@@ -21,7 +21,7 @@ class Config:
     TELEGRAM_API_HASH: Optional[str] = os.getenv("TELEGRAM_API_HASH")
 
     # Database Settings
-    SQLITE_DB_PATH: str = os.getenv("SQLITE_DB_PATH", "database/messages.db")
+    DB_PATH: str = os.getenv("SQLITE_DB_PATH", "database/messages.db")
     
     # General Settings
     TIMEZONE: str = os.getenv("TIMEZONE", "Asia/Seoul")
@@ -37,5 +37,5 @@ class Config:
     @classmethod
     def ensure_db_dir(cls) -> None:
         """Ensure the directory for the SQLite database exists."""
-        db_path = Path(cls.SQLITE_DB_PATH)
+        db_path = Path(cls.DB_PATH)
         db_path.parent.mkdir(parents=True, exist_ok=True)
