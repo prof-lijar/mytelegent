@@ -3,12 +3,13 @@ from __future__ import annotations
 import logging
 from openai import OpenAI
 from tools.config import Config
+from tools.logging_tool import get_logger
 
-# Setup basic logging for the LLM tool
-logger = logging.getLogger(__name__)
+# Use custom logger instead of standard logging
+logger = get_logger("local_llm_tool")
 
 class LocalLLMTool:
-    \"\"\"Tool to communicate with a local LLM (Ollama).\"\"\"
+    """Tool to communicate with a local LLM (Ollama)."""
 
     def __init__(self):
         # Validate configuration before initializing client
@@ -21,7 +22,7 @@ class LocalLLMTool:
         )
 
     def call_local_llm(self, system_prompt: str, user_prompt: str) -> str:
-        \"\"\"
+        """
         Generate a response from the local LLM.
         
         Args:
@@ -30,30 +31,30 @@ class LocalLLMTool:
             
         Returns:
             The LLM's response text.
-        \"\"\"
+        """
         try:
             response = self.client.chat.completions.create(
                 model=Config.LOCAL_LLM_MODEL,
                 messages=[
-                    {\"role\": \"system\", \"content\": system_prompt},
-                    {\"role\": \"user\", \"content\": user_prompt},
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
                 ],
                 temperature=0,
             )
-            return response.choices[0].message.content or \"\"
+            return response.choices[0].message.content or ""
         except Exception as e:
-            logger.error(f\"Error calling local LLM: {e}\")
-            return f\"Error: {str(e)}\"
+            logger.error(f"Error calling local LLM: {e}", exc_info=True)
+            return f"Error: {str(e)}"
 
-if __name__ == \"__main__\":
+if __name__ == "__main__":
     # Simple manual test for LocalLLMTool
     # Note: This requires Ollama to be running and the model to be specified in Config
-    print(\"Testing LocalLLMTool...\")
+    print("Testing LocalLLMTool...")
     try:
         llm = LocalLLMTool()
-        sys_prompt = \"You are a helpful assistant.\"
-        user_prompt = \"Hello, who are you?\"
+        sys_prompt = "You are a helpful assistant."
+        user_prompt = "Hello, who are you?"
         result = llm.call_local_llm(sys_prompt, user_prompt)
-        print(f\"Response: {result}\")
+        print(f"Response: {result}")
     except Exception as e:
-        print(f\"Error during test: {e}\")
+        print(f"Error during test: {e}")
