@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import Dict
 
 # Ensure logs directory exists
 LOG_DIR = Path("logs")
@@ -10,41 +11,45 @@ LOG_DIR.mkdir(exist_ok=True)
 ACTIVITY_LOG = LOG_DIR / "activity.log"
 ERROR_LOG = LOG_DIR / "errors.log"
 
-class CustomLogger:
-    """Dual handler logger for activity and errors."""
-    def __init__(self, name: str):
-        self.logger = logging.getLogger(name)
-        self.logger.setLevel(logging.DEBUG)
+class AppLogger:
+    """Custom logger that handles dual logging to activity and error files."""
+    
+    def __init__(self):
+        self._loggers: Dict[str, logging.Logger] = {}
+        self._formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
         
-        # Avoid duplicate handlers if logger is retrieved multiple times
-        if not self.logger.handlers:
-            # Activity handler (INFO and above)
-            activity_handler = logging.FileHandler(ACTIVITY_LOG)
-            activity_handler.setLevel(logging.INFO)
-            activity_fmt = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-            activity_handler.setFormatter(activity_fmt)
-            
-            # Error handler (ERROR and above)
-            error_handler = logging.FileHandler(ERROR_LOG)
-            error_handler.setLevel(logging.ERROR)
-            error_fmt = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-            error_handler.setFormatter(error_fmt)
-            
-            self.logger.addHandler(activity_handler)
-            self.logger.addHandler(error_handler)
+        # File handlers
+        self._activity_handler = logging.FileHandler(ACTIVITY_LOG)
+        self._activity_handler.setLevel(logging.INFO)
+        self._activity_handler.setFormatter(self._formatter)
 
-    def info(self, msg: str) -> None:
-        """Log general application flow."""
-        self.logger.info(msg)
+        self._error_handler = logging.FileHandler(ERROR_LOG)
+        self._error_handler.setLevel(logging.ERROR)
+        self._error_handler.setFormatter(self._formatter)
 
-    def error(self, msg: str, exc_info: bool = False) -> None:
-        """Log errors and optionally tracebacks."""
-        self.logger.error(msg, exc_info=exc_info)
+    def get_logger(self, name: str) -> logging.Logger:
+        """Get or create a named logger with configured handlers."""
+        if name in self._loggers:
+            return self._loggers[name]
 
-    def debug(self, msg: str) -> None:
-        """Log debug information."""
-        self.logger.debug(msg)
+        logger = logging.getLogger(name)
+        logger.setLevel(logging.DEBUG)
+        
+        # Clear existing handlers to avoid duplicates
+        if logger.hasHandlers():
+            logger.handlers.clear()
 
-def get_logger(name: str) -> CustomLogger:
-    """Get a logger instance for the given name."""
-    return CustomLogger(name)
+        logger.addHandler(self._activity_handler)
+        logger.addHandler(self._error_handler)
+        
+        self._loggers[name] = logger
+        return logger
+
+# Singleton instance
+_app_logger_instance = AppLogger()
+
+def get_logger(name: str) -> logging.Logger:
+    """Utility function to get a logger instance by name."""
+    return _app_logger_instance.get_logger(name)
