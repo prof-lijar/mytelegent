@@ -138,3 +138,28 @@ def list_pending_messages() -> List[ScheduledMessage]:
             ''',
         )
         return [_row_to_scheduled_message(row) for row in cursor.fetchall()]
+
+def get_message_by_id(message_id: int) -> Optional[ScheduledMessage]:
+    \"\"\"Get a scheduled message by its ID.\"\"\"
+    with get_db_connection() as conn:
+        cursor = conn.execute(
+            'SELECT id, target, target_type, scheduled_time, message, status, retry_count, created_at, sent_at, error_message FROM scheduled_messages WHERE id = ?',
+            (message_id,),
+        )
+        row = cursor.fetchone()
+        return _row_to_scheduled_message(row) if row else None
+
+def update_message_status(message_id: int, status: str, error_message: Optional[str] = None) -> None:
+    \"\"\"Update the status of a scheduled message.\"\"\"
+    with get_db_connection() as conn:
+        if error_message:
+            conn.execute(
+                'UPDATE scheduled_messages SET status = ?, error_message = ? WHERE id = ?',
+                (status, error_message, message_id),
+            )
+        else:
+            conn.execute(
+                'UPDATE scheduled_messages SET status = ? WHERE id = ?',
+                (status, message_id),
+            )
+        conn.commit()

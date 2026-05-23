@@ -1,36 +1,26 @@
-from __future__ import annotations
-
 import asyncio
-import signal
-import sys
-from tools.logging_tool import setup_logging, get_logger
+import logging
 from agents.scheduler_agent import SchedulerAgent
+from tools.logging_tool import logger
 
-logger = get_logger(__name__)
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
-async def main() -> None:
-    \"\"\"Main entry point for the background scheduler process.\"\"\"
-    setup_logging()
-    logger.info(\"[Backend] Starting the Scheduler Process...\")
+async def main():
+    \"\"\"Entry point to start the scheduler background process.\"\"\"
+    logger.info(\"[Backend] Starting scheduler runner... \")
     
     scheduler_agent = SchedulerAgent()
-    scheduler_agent.start()
-    
     try:
-        # Keep the process alive
-        while True:
-            await asyncio.sleep(3600)
-    except asyncio.CancelledError:
-        logger.info(\"[Backend] Scheduler process cancelled.\")
+        await scheduler_agent.run_forever()
     except KeyboardInterrupt:
-        logger.info(\"[Backend] Scheduler process interrupted by user.\")
-    finally:
-        scheduler_agent.shutdown()
-        logger.info(\"[Backend] Scheduler process exited.\")
+        await scheduler_agent.stop()
+        logger.info(\"[Backend] Scheduler runner stopped by user.\")
+    except Exception as e:
+        logger.error(f\"[Backend] Fatal error in scheduler runner: {e}\")
 
 if __name__ == \"__main__\":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        # Avoid printing traceback on Ctrl+C
-        sys.exit(0)
+        pass

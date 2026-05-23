@@ -2,85 +2,109 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import random
 from datetime import datetime, timezone
-from typing import NoReturn
+from typing import List, Optional
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from tools.db_tool import get_due_messages, mark_processing, mark_sent, mark_failed
+from tools.db_tool import (
+    get_due_messages,
+    mark_processing,
+    mark_sent,
+    mark_failed,
+    get_message_by_id,
+    update_message_status,
+)
 from tools.telegram_tool import send_telegram_message
-from tools.logging_tool import get_logger
+from tools.logging_tool import logger
 
-logger = get_logger(__name__)
+# Configure logging
+logger.setLevel(logging.INFO)
 
 class SchedulerAgent:
-    \"\"\"Agent responsible for scheduling and sending messages via Telegram.\"\"\"
+    \"\"\"Agent that manages the scheduling and sending of messages.\"\"\"
 
-    def __init__(self, check_interval: int = 60) -> None:
-        \"\"\"Initialize the SchedulerAgent.\"\"\"
+    def __init__(self, max_retries: int = 2) -> None:
+        \"\"\"Initialize the scheduler agent.\"\"\"
+        self.max_retries = max_retries
         self.scheduler = AsyncIOScheduler()
-        self.check_interval = check_interval
-        self.max_retries = 2
 
-    async def process_due_messages(self) -> None:
-        \"\"\"Check for due messages and attempt to send them.\"\"\"
+    async def start(self) -> None:
+        \"\"\"Start the background scheduler.\"\"\"
+        self.scheduler.add_job(
+            self._check_due_messages, 
+            'interval', 
+            seconds=60, 
+            id='check_due_messages_job', 
+            replace_existing=True
+        )
+        self.scheduler.start()
+        logger.info(\"[Backend] SchedulerAgent started. Checking for due messages every 60 seconds.\")
+
+    async def stop(self) -> None:
+        \"\"\"Stop the background scheduler.\"\"\"
+        self.scheduler.shutdown()
+        logger.info(\"[Backend] SchedulerAgent stopped.\")
+
+    async def _check_due_messages(self) -> None:
+        \"\"\"Periodically check the database for due messages.\"\"\"
         now = datetime.now(timezone.utc)
         due_messages = get_due_messages(now)
         
         if not due_messages:
             return
 
-        logger.info(f\"[Backend] Found {len(due_messages)} messages due for sending\")
-
+        logger.info(f\"[Backend] Found {len(due_messages)} due messages. Processing...\")
+        
+        # Process messages sequentially as per requirements
         for msg in due_messages:
-            try:
-                # Mark as processing to avoid duplicate sends
-                mark_processing(msg.id)
-                
-                logger.info(f\"[Backend] Attempting to send message {msg.id} to {msg.target}\")
-                
-                # The Telegram tool already implements the 2-5s random delay
-                result = await send_telegram_message(msg.target, msg.message)
-                
-                if result[\"success\"]:
-                    mark_sent(msg.id)
-                    logger.info(f\"[Backend] Successfully sent message {msg.id} to {msg.target}\")
-                else:
-                    error_msg = result.get(\"error\", \"Unknown error\")
-                    await self._handle_failure(msg, error_msg)
-                    
-            except Exception as e:
-                logger.exception(f\"[Backend] Unexpected error processing message {msg.id}: {e}\")
-                await self._handle_failure(msg, str(e))
+            await self._process_message(msg)
 
-    async def _handle_failure(self, msg, error_msg: str) -> None:
-        \"\"\"Handle message sending failure with retry logic.\"\"\"
-        if msg.retry_count < self.max_retries:
-            logger.warning(f\"[Backend] Message {msg.id} failed. Retry {msg.retry_count + 1}/{self.max_retries}. Error: {error_msg}\")
-            # We want to set it back to 'pending' so it's picked up again.
-            # Since mark_failed sets it to 'failed', we need a way to set it to 'pending'.
-            # I will implement a custom update in db_tool or just call mark_failed and then update.
-            # For now, I'll call mark_failed and then I'll fix db_tool to support retries better.
-            mark_failed(msg.id, error_msg)
-            # To allow retry, we must set it back to 'pending'
-            from tools.db_tool import get_db_connection
-            with get_db_connection() as conn:
-                conn.execute(
-                    'UPDATE scheduled_messages SET status = ? WHERE id = ?',
-                    ('pending', msg.id),
-                )
-                conn.commit()
+    async def _process_message(self, msg) -> None:
+        \"\"\"Handle the sending logic for a single message.\"\"\"
+        try:
+            # 1. Mark as processing
+            mark_processing(msg.id)
+            
+            # 2. Send message via Telegram tool
+            # Note: send_telegram_message already includes the 2-5s random delay
+            result = await send_telegram_message(msg.target, msg.message)
+            
+            if result[\"success\"]:
+                mark_sent(msg.id)
+                logger.info(f\"[Backend] Successfully sent message {msg.id} to {msg.target}\")
+            else:
+                # Handle failure
+                error_msg = result.get(\"error\", \"Unknown error\")
+                logger.warning(f\"[Backend] Failed to send message {msg.id} to {msg.target}: {error_msg}\")
+                await self._handle_failure(msg.id, error_msg)
+                
+        except Exception as e:
+            error_msg = str(e)
+            logger.error(f\"[Backend] Unexpected error processing message {msg.id}: {error_msg}\")
+            await self._handle_failure(msg.id, error_msg)
+
+    async def _handle_failure(self, message_id: int, error: str) -> None:
+        \"\"\"Update database status based on retry count.\"\"\"
+        # 1. Increment retry count and mark as failed (using db_tool.mark_failed)
+        mark_failed(message_id, error)
+        
+        # 2. Check current retry count
+        msg = get_message_by_id(message_id)
+        if msg is None:
+            return
+        
+        # 3. If retry count is within limit, set status back to 'pending' for next check
+        if msg.retry_count <= self.max_retries:
+            update_message_status(message_id, 'pending', error_message=error)
+            logger.info(f\"[Backend] Message {message_id} will be retried (retry {msg.retry_count}/{self.max_retries})\")
         else:
-            logger.error(f\"[Backend] Message {msg.id} failed after {self.max_retries} retries. Marking as failed. Error: {error_msg}\")
-            mark_failed(msg.id, error_msg)
+            logger.error(f\"[Backend] Message {message_id} reached max retries and is marked as failed.\")
 
-    def start(self) -> None:
-        \"\"\"Start the scheduler.\"\"\"
-        self.scheduler.add_job(self.process_due_messages, 'interval', seconds=self.check_interval)
-        self.scheduler.start()
-        logger.info(f\"[Backend] Scheduler started with interval {self.check_interval}s\")
-
-    def shutdown(self) -> None:
-        \"\"\"Shutdown the scheduler.\"\"\"
-        self.scheduler.shutdown()
-        logger.info(\"[Backend] Scheduler shut down\")
+    async def run_forever(self) -> None:
+        \"\"\"Run the scheduler in a blocking way for the entry point.\"\"\"
+        await self.start()
+        try:
+            while True:
+                await asyncio.sleep(3600)
+        except asyncio.CancelledError:
+            await self.stop()
