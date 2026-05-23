@@ -1,61 +1,35 @@
 # Project Progress
 
 ## Current Phase
-<<<<<<< HEAD
 Development — Final integration of core modules into the Main CLI.
 
 ## What Was Completed This Cycle
-- Core modules (Parsing Agent, Telegram Tool, Scheduler) implemented and QA approved.
-- Core Infrastructure (PR #6) merged.
-- Created Issue #30 for Main CLI and Logging integration.
+- Core Infrastructure (DB tool, Config, Models) implemented and merged.
+- Parsing Agent implemented and merged.
+- Scheduler Agent implemented and merged.
 
 ## What Is In Progress
-- [Issue #25] Architect merging approved PRs (#18, #21, #28).
-- [Issue #30] Backend implementing Main CLI and Logging.
-=======
-Development — Implementing core modules and integrating them.
-
-## What Was Completed This Cycle
-- PRs #6, #18, and #21 submitted for core infrastructure, parsing, and telegram tools.
-- Work plan established for Cycle 13.
-
-## What Is In Progress
-- PR #6: Core Infrastructure (Awaiting QA review)
-- PR #18: Parsing Agent (Awaiting QA review)
-- PR #21: Telegram Tool (Awaiting QA review)
-- Issue #26: Implement Scheduler Agent (Assigned to Backend)
-- Issue #27: Review Core Modules PRs (Assigned to QA)
-- Issue #25: Merge approved core modules (Assigned to Architect)
->>>>>>> backend/implement-scheduler
+- [PR #21] Telegram Tool implementation (Awaiting QA review and Architect merge).
+- [Issue #30] Main CLI and Logging integration (Assigned to Backend).
+- [Issue #25] Architect merging approved core modules.
 
 ## What Is Blocked
 - None.
 
 ## Next Cycle Plan
-<<<<<<< HEAD
-- Architect to merge all approved core modules.
-- Backend to build the `main.py` entry point and implement the logging system.
-- Once merged and integrated, move to Quality phase for end-to-end testing.
-=======
-- QA to approve PRs #6, #18, #21.
-- Architect to merge approved PRs.
-- Backend to complete the Scheduler Agent (Issue #26).
->>>>>>> backend/implement-scheduler
+- QA to review and approve PR #21 (Telegram Tool).
+- Architect to merge PR #21.
+- Backend to implement the `main.py` entry point and integrate the logging system.
+- Once integrated, move to the Quality phase for end-to-end testing.
 
 ## Module Checklist
 - [x] Config loader (.env, python-dotenv)
 - [x] Pydantic models (ParsedMessageCommand, ScheduledMessage)
 - [x] SQLite db_tool (CRUD for scheduled_messages)
 - [x] Local LLM tool (Ollama/OpenAI-compatible)
-<<<<<<< HEAD
 - [x] Parsing agent (NL → structured JSON)
-- [x] Telegram tool (Telethon send with delay)
+- [ ] Telegram tool (Telethon send with delay) - PR #21
 - [x] Scheduler agent (APScheduler background loop)
-=======
-- [x] Parsing agent (NL → structured JSON) - PR #18
-- [x] Telegram tool (Telethon send with delay) - PR #21
-- [ ] Scheduler agent (APScheduler background loop)
->>>>>>> backend/implement-scheduler
 - [ ] Main CLI (parse → confirm → schedule)
 - [ ] Logging (activity.log, errors.log)
 - [ ] Tests (mocked LLM, mocked Telegram, temp DB)
