@@ -2,60 +2,60 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import Optional
 
-# Ensure logs directory exists
-log_dir = Path("logs")
-log_dir.mkdir(exist_ok=True)
+# Create logs directory if it doesn't exist
+LOG_DIR = Path("logs")
+LOG_DIR.mkdir(exist_ok=True)
 
-ACTIVITY_LOG = log_dir / "activity.log"
-ERROR_LOG = log_dir / "errors.log"
+ACTIVITY_LOG = LOG_DIR / "activity.log"
+ERROR_LOG = LOG_DIR / "errors.log"
 
-class ActivityHandler(logging.FileHandler):
-    def emit(self, record):
-        if record.levelno <= logging.INFO:
-            super().emit(record)
-
-class ErrorHandler(logging.FileHandler):
-    def emit(self, record):
-        if record.levelno >= logging.ERROR:
-            super().emit(record)
-
-def setup_logger() -> logging.Logger:
-    \"\"\"Initialize and return the application logger.\"\"\"
-    logger = logging.getLogger("tiny-jarvis")
-    logger.setLevel(logging.DEBUG)
-
-    if not logger.handlers:
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        )
-
-        # Activity log: INFO and below
-        activity_handler = ActivityHandler(ACTIVITY_LOG)
-        activity_handler.setLevel(logging.DEBUG)
-        activity_handler.setFormatter(formatter)
-        logger.addHandler(activity_handler)
-
-        # Error log: ERROR and above
-        error_handler = ErrorHandler(ERROR_LOG)
-        error_handler.setLevel(logging.ERROR)
-        error_handler.setFormatter(formatter)
-        logger.addHandler(error_handler)
-
-    return logger
-
-def get_logger(name: str) -> logging.Logger:
-    \"\"\"Return a logger with the given name, ensuring it uses the app configuration.\"\"\"
-    app_logger = setup_logger()
-    # We use the app_logger's handlers for consistency across the project
-    logger = logging.getLogger(f"tiny-jarvis.{name}")
-    logger.setLevel(app_logger.level)
+class DualLogger:
+    """Logger that separates activity and error logs."""
     
-    if not logger.handlers:
-        # Inherit handlers from the root-like setup_logger
-        for handler in app_logger.handlers:
-            logger.addHandler(handler)
-            
-    return logger
+    def __init__(self, name: str = "tiny-jarvis"):
+        self.logger = logging.getLogger(name)
+        self.logger.setLevel(logging.DEBUG)
+        
+        if not self.logger.handlers:
+            formatter = logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            )
 
-logger = setup_logger()
+            # Activity Handler (INFO and below)
+            activity_handler = logging.FileHandler(ACTIVITY_LOG)
+            activity_handler.setLevel(logging.INFO)
+            activity_handler.setFormatter(formatter)
+            activity_handler.addFilter(lambda record: record.levelno <= logging.INFO)
+
+            # Error Handler (WARNING and above)
+            error_handler = logging.FileHandler(ERROR_LOG)
+            error_handler.setLevel(logging.WARNING)
+            error_handler.setFormatter(formatter)
+
+            self.logger.addHandler(activity_handler)
+            self.logger.addHandler(error_handler)
+
+    def info(self, message: str) -> None:
+        """Log a general activity event."""
+        self.logger.info(message)
+
+    def error(self, message: str, exc_info: Optional[bool] = False) -> None:
+        """Log an error event."""
+        self.logger.error(message, exc_info=exc_info)
+
+    def warning(self, message: str) -> None:
+        """Log a warning event."""
+        self.logger.warning(message)
+
+    def debug(self, message: str) -> None:
+        """Log a debug event."""
+        self.logger.debug(message)
+
+def get_logger(name: str) -> DualLogger:
+    """Return a DualLogger instance for the given name."""
+    return DualLogger(name)
+
+# Singleton instance for general use
+logger = DualLogger()
