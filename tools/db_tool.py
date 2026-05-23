@@ -8,6 +8,7 @@ from typing import List, Optional, Generator
 
 from tools.config import Config
 from schemas.models import ScheduledMessage, ParsedMessageCommand
+<<<<<<< HEAD
 
 @contextmanager
 def get_db_connection() -> Generator[sqlite3.Connection, None, None]:
@@ -34,6 +35,8 @@ def _row_to_scheduled_message(row: sqlite3.Row) -> ScheduledMessage:
         sent_at=datetime.fromisoformat(row["sent_at"]) if row["sent_at"] else None,
         error_message=row["error_message"],
     )
+=======
+>>>>>>> backend/parsing-agent
 
 def initialize_database() -> None:
     """Initialize the SQLite database and create tables."""

@@ -1,4 +1,11 @@
+<<<<<<< HEAD
 from __future__ import annotations
+=======
+from tools.config import Config
+from tools.db_tool import initialize_database, insert_scheduled_message, get_due_messages, list_pending_messages
+from schemas.models import ScheduledMessage, ParsedMessageCommand
+from datetime import datetime, timedelta, timezone
+>>>>>>> backend/parsing-agent
 
 import os
 from datetime import datetime, timedelta, timezone
@@ -34,11 +41,19 @@ def test_db_lifecycle():
     """Test the full lifecycle of a scheduled message in the database."""
     # initialize_database() is called in setup_module
     
+<<<<<<< HEAD
+=======
+    # Use ParsedMessageCommand as required by the updated insert_scheduled_message
+>>>>>>> backend/parsing-agent
     msg = ParsedMessageCommand(
         target="test_user",
         target_type="username",
         scheduled_time=datetime.now(timezone.utc) - timedelta(minutes=1),
+<<<<<<< HEAD
         message="Hello Lifecycle Test!",
+=======
+        message="Hello Test!",
+>>>>>>> backend/parsing-agent
         confidence=1.0
     )
     
@@ -46,6 +61,14 @@ def test_db_lifecycle():
     assert msg_id is not None
     
     pending = list_pending_messages()
+<<<<<<< HEAD
+=======
+    print(f"Pending messages count: {len(pending)}")
+    
+    due = get_due_messages(datetime.now(timezone.utc))
+    print(f"Due messages count: {len(due)}")
+    
+>>>>>>> backend/parsing-agent
     assert len(pending) > 0
     assert any(m.id == msg_id for m in pending)
     
