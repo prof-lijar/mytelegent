@@ -1,33 +1,33 @@
 # Project Progress
 
 ## Current Phase
-Development - The team is building core modules and reviewing initial implementations.
+Development — Final integration of core modules into the Main CLI.
 
 ## What Was Completed This Cycle
-- Created issue #15 for QA review of PR #6 (core infrastructure)
-- Updated work_plan.json with QA/backend/architect assignments
+- Core modules (Parsing Agent, Telegram Tool, Scheduler) implemented and QA approved.
+- Core Infrastructure (PR #6) merged.
+- Created Issue #30 for Main CLI and Logging integration.
 
 ## What Is In Progress
-- [PR #6] Core infrastructure implementation (config, DB, LLM tools)
-- [Issue #14] Parsing agent implementation
-- [Issue #15] QA review of core infrastructure PR
+- [Issue #25] Architect merging approved PRs (#18, #21, #28).
+- [Issue #30] Backend implementing Main CLI and Logging.
 
 ## What Is Blocked
-- None
+- None.
 
 ## Next Cycle Plan
-- QA will complete review of PR #6
-- Backend will continue parsing agent development
-- Architect will prepare for PR merge review
+- Architect to merge all approved core modules.
+- Backend to build the `main.py` entry point and implement the logging system.
+- Once merged and integrated, move to Quality phase for end-to-end testing.
 
 ## Module Checklist
 - [x] Config loader (.env, python-dotenv)
-- [ ] Pydantic models (ParsedMessageCommand, ScheduledMessage)
+- [x] Pydantic models (ParsedMessageCommand, ScheduledMessage)
 - [x] SQLite db_tool (CRUD for scheduled_messages)
 - [x] Local LLM tool (Ollama/OpenAI-compatible)
-- [ ] Parsing agent (NL → structured JSON)
-- [ ] Telegram tool (Telethon send with delay)
-- [ ] Scheduler agent (APScheduler background loop)
+- [x] Parsing agent (NL → structured JSON)
+- [x] Telegram tool (Telethon send with delay)
+- [x] Scheduler agent (APScheduler background loop)
 - [ ] Main CLI (parse → confirm → schedule)
 - [ ] Logging (activity.log, errors.log)
 - [ ] Tests (mocked LLM, mocked Telegram, temp DB)
