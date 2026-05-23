@@ -1,8 +1,8 @@
 {
-  "cycle_reasoning": "Merge critical Telethon import fix (PR #35) and continue full system validation.",
+  "cycle_reasoning": "Merge the critical Telethon import fix (PR #35) and proceed with full system end-to-end validation (#34).",
   "current_phase": "quality",
   "assignments": [
     {"role": "architect", "turns": 1, "priority": "P0"},
-    {"role": "qa", "turns": 3, "priority": "P0"}
+    {"role": "qa", "turns": 2, "priority": "P0"}
   ]
 }

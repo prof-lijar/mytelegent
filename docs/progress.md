@@ -15,9 +15,9 @@ Quality — Full system validation and regression testing.
 - None.
 
 ## Next Cycle Plan
-- Merge PR #35 to resolve Telethon import errors.
-- QA to complete full end-to-end validation.
-- Verify all tests pass across the entire suite.
+- Architect to merge PR #35 to resolve Telethon import errors.
+- QA to perform full system end-to-end validation and verify all tests pass.
+- Final sign-off on the working CLI.
 
 ## Module Checklist
 - [x] Config loader (.env, python-dotenv)
