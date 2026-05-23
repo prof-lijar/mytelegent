@@ -2,93 +2,63 @@ from __future__ import annotations
 
 import asyncio
 import random
-import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
 
 from telethon import TelegramClient, errors
 from tools.config import Config
+from tools.logging_tool import get_logger
 
-# Setup logging
-logger = logging.getLogger(__name__)
+logger = get_logger("telegram_tool")
 
-class TelegramTool:
-    """Tool for interacting with Telegram via Telethon."""
+async def send_telegram_message(target: str, message: str) -> Dict[str, Optional[str]]:
+    """
+    Send a message via Telegram using the Telethon client.
+    
+    Args:
+        target: The recipient (phone, username, or name).
+        message: The text message to send.
+        
+    Returns:
+        A dictionary indicating success or failure.
+    """
+    # Requirement: Random delay 2-5 seconds before sending
+    delay = random.uniform(2, 5)
+    await asyncio.sleep(delay)
 
-    def __init__(self) -> None:
-        """Initialize the TelegramTool with config values."""
-        # Note: validation is now done in get_client to avoid import-time errors in tests
-        self.api_id = Config.TELEGRAM_API_ID
-        self.api_hash = Config.TELEGRAM_API_HASH
-        self.session_path = "database/telegram_session"
-        self.client: Optional[TelegramClient] = None
-
-    async def get_client(self) -> TelegramClient:
-        """Get or create the TelegramClient instance."""
+    try:
+        # Validate required Telegram vars
         Config.validate_telegram_config()
-        if self.client is None:
-            self.client = TelegramClient(
-                self.session_path, 
-                int(self.api_id), 
-                self.api_hash
-            )
-            await self.client.start()
-        return self.client
-
-    async def is_authorized(self) -> bool:
-        """Check if the Telegram client is authorized."""
-        try:
-            client = await self.get_client()
-            await client.get_me()
-            return True
-        except Exception as e:
-            logger.error(f"[Backend] Authorization check failed: {e}")
-            return False
-
-    async def send_message(self, target: str, message: str) -> Dict[str, Any]:
-        """
-        Send a message to a target (username or phone).
-        Includes a random delay to avoid spam filters.
-        """
-        try:
-            # Safety Rule: Random delay 2-5 seconds
-            delay = random.uniform(2, 5)
-            await asyncio.sleep(delay)
-
-            client = await self.get_client()
+        
+        async with TelegramClient(
+            'tiny_jarvis_session', 
+            Config.TELEGRAM_API_ID, 
+            Config.TELEGRAM_API_HASH
+        ) as client:
             await client.send_message(target, message)
             
-            return {"success": True, "target": target, "error": None}
-        except errors.FloodWaitError as e:
-            logger.error(f"[Backend] FloodWaitError: {e.seconds} seconds")
-            return {"success": False, "target": target, "error": f"FloodWait: {e.seconds}s"}
-        except Exception as e:
-            # Catch all other exceptions (including Telethon specific ones)
-            logger.error(f"[Backend] Error sending to {target}: {e}")
-            return {"success": False, "target": target, "error": str(e)}
+        logger.info(f"Successfully sent message to {target}")
+        return {"success": True, "target": target, "error": None}
 
-# Singleton instance
-_tool_instance: Optional[TelegramTool] = None
-
-def get_telegram_tool() -> TelegramTool:
-    """Get the singleton instance of TelegramTool."""
-    global _tool_instance
-    if _tool_instance is None:
-        _tool_instance = TelegramTool()
-    return _tool_instance
-
-async def send_telegram_message(target: str, message: str) -> Dict[str, Any]:
-    """
-    Async wrapper to send a telegram message.
-    As per Guide: No internal retry logic here; handled by scheduler.
-    """
-    tool = get_telegram_tool()
-    return await tool.send_message(target, message)
+    except errors.api.UserIdInvalidError:
+        err = f"Invalid user ID or username: {target}"
+        logger.error(err)
+        return {"success": False, "target": target, "error": err}
+    except errors.api.PhoneCodeInvalidError:
+        err = "Invalid phone code provided for Telegram authentication"
+        logger.error(err)
+        return {"success": False, "target": target, "error": err}
+    except Exception as e:
+        err = f"Unexpected error sending message to {target}: {str(e)}"
+        logger.error(err, exc_info=True)
+        return {"success": False, "target": target, "error": err}
 
 if __name__ == "__main__":
-    # Simple manual test block
+    # Manual test block
     import asyncio
-    async def test():
-        tool = get_telegram_tool()
-        print(f"Authorized: {await tool.is_authorized()}")
     
-    asyncio.run(test())
+    async def test_send():
+        # Replace with a real target for testing if needed
+        res = await send_telegram_message("@me", "Test message from tiny-jarvis")
+        print(res)
+
+    asyncio.run(test_send())

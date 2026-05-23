@@ -9,11 +9,12 @@ from pydantic import ValidationError
 from schemas.models import ParsedMessageCommand
 from tools.local_llm_tool import LocalLLMTool
 from tools.config import Config
+from tools.logging_tool import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger("parsing_agent")
 
 class ParsingAgent:
-    'Agent that converts natural language commands into structured JSON using a local LLM.'
+    """Agent that converts natural language commands into structured JSON using a local LLM."""
 
     def __init__(self):
         self.llm_tool = LocalLLMTool()
@@ -28,7 +29,7 @@ class ParsingAgent:
             )
 
     def parse_command(self, user_input: str) -> Optional[ParsedMessageCommand]:
-        'Parse a natural language command into a ParsedMessageCommand object.'
+        """Parse a natural language command into a ParsedMessageCommand object."""
         current_time = datetime.now(timezone.utc).isoformat()
         timezone_str = Config.TIMEZONE
         
@@ -44,11 +45,11 @@ class ParsingAgent:
             data = json.loads(cleaned_response)
             return ParsedMessageCommand(**data)
         except (json.JSONDecodeError, ValidationError, Exception) as e:
-            logger.error(f'Parsing failed for input {user_input}: {e}')
+            logger.error(f'Parsing failed for input {user_input}: {e}', exc_info=True)
             return None
 
     def _clean_json_response(self, response: str) -> str:
-        'Remove markdown code blocks from the LLM response.'
+        """Remove markdown code blocks from the LLM response."""
         response = response.strip()
         if response.startswith('```json') and response.endswith('```'):
             return response[8:-3].strip()
@@ -64,6 +65,7 @@ class ParsingAgent:
             return response
 
 if __name__ == '__main__':
+    # Example usage
     agent = ParsingAgent()
     test_input = 'Send Hello to @johndoe tomorrow at 9 AM'
     result = agent.parse_command(test_input)
