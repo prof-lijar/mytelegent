@@ -120,3 +120,35 @@ Traceback (most recent call last):
   File "/home/orchestor/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/unittest/mock.py", line 2240, in _execute_mock_call
     raise effect
 Exception: Generic Error
+2026-05-24 07:06:25,627 - local_llm_tool - ERROR - Error calling local LLM: Error code: 404 - {'error': {'message': "model 'gemma4' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+Traceback (most recent call last):
+  File "/mnt/hdd1/orchestor/lidev/orchast_agent/tiny-jarvis/product-repo/tools/local_llm_tool.py", line 27, in call_local_llm
+    response = self.client.chat.completions.create(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd1/orchestor/lidev/orchast_agent/tiny-jarvis/.venv/lib/python3.11/site-packages/openai/_utils/_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd1/orchestor/lidev/orchast_agent/tiny-jarvis/.venv/lib/python3.11/site-packages/openai/resources/chat/completions/completions.py", line 1204, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "/mnt/hdd1/orchestor/lidev/orchast_agent/tiny-jarvis/.venv/lib/python3.11/site-packages/openai/_base_client.py", line 1297, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd1/orchestor/lidev/orchast_agent/tiny-jarvis/.venv/lib/python3.11/site-packages/openai/_base_client.py", line 1070, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.NotFoundError: Error code: 404 - {'error': {'message': "model 'gemma4' not found", 'type': 'not_found_error', 'param': None, 'code': None}}
+2026-05-24 07:06:25,643 - parsing_agent - ERROR - Parsing failed for input Tell Jisoo tomorrow at 9 AM that I finished the report: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+Traceback (most recent call last):
+  File "/mnt/hdd1/orchestor/lidev/orchast_agent/tiny-jarvis/product-repo/agents/parsing_agent.py", line 45, in parse_command
+    data = json.loads(cleaned_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/orchestor/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/orchestor/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/orchestor/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
