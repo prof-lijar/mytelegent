@@ -14,11 +14,7 @@ class Config:
     # LLM Settings
     LOCAL_LLM_BASE_URL: str = os.getenv("LOCAL_LLM_BASE_URL", "http://localhost:11434/v1")
     LOCAL_LLM_MODEL: str = os.getenv("LOCAL_LLM_MODEL", "gemma4")
-<<<<<<< HEAD
-    LOCAL_LLM_API_KEY: Optional[str] = os.getenv("LOCAL_LLM_API_KEY")
-=======
     LOCAL_LLM_API_KEY: str = os.getenv("LOCAL_LLM_API_KEY", "ollama")
->>>>>>> backend/telegram-tool
 
     # Telegram Settings
     TELEGRAM_API_ID: Optional[str] = os.getenv("TELEGRAM_API_ID")
@@ -39,7 +35,6 @@ class Config:
             )
 
     @classmethod
-<<<<<<< HEAD
     def validate_llm_config(cls) -> None:
         """Validate that required LLM environment variables are set."""
         if not cls.LOCAL_LLM_BASE_URL or not cls.LOCAL_LLM_MODEL:
@@ -48,8 +43,6 @@ class Config:
             )
 
     @classmethod
-=======
->>>>>>> backend/telegram-tool
     def ensure_db_dir(cls) -> None:
         """Ensure the directory for the SQLite database exists."""
         db_path = Path(cls.DB_PATH)
