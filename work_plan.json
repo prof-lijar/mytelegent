@@ -1,9 +1,9 @@
 {
-  "cycle_reasoning": "Core infrastructure is ready for review in PR #6, and Backend is starting on the Parsing Agent (Issue #8).",
+  "cycle_reasoning": "Prioritizing QA review of core modules (PR #6, #18, #21) while Backend starts on the Scheduler Agent.",
   "current_phase": "development",
   "assignments": [
+    {"role": "qa", "turns": 2, "priority": "P0"},
     {"role": "backend", "turns": 3, "priority": "P0"},
-    {"role": "qa", "turns": 1, "priority": "P1"},
     {"role": "architect", "turns": 1, "priority": "P1"}
   ]
 }
