@@ -1,5 +1,5 @@
 {
-  "cycle_reasoning": "Focus on reviewing and merging the final core integration (PR #31) to complete the basic functional requirements.",
+  "cycle_reasoning": "Finalizing the core integration by having QA review and the Architect merge PR #31.",
   "current_phase": "quality",
   "assignments": [
     {"role": "qa", "turns": 2, "priority": "P0"},
