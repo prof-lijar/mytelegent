@@ -27,3 +27,21 @@
 2026-05-24 06:47:47,440 - scheduler_agent - INFO - [Backend] Scheduler started. Checking every 60 seconds.
 2026-05-24 06:47:47,440 - scheduler_agent - INFO - [Backend] Scheduler shut down.
 2026-05-24 06:47:47,444 - telegram_tool - INFO - Successfully sent message to test_user
+2026-05-24 07:22:13,310 - telegram_tool - INFO - Successfully sent message to test_user
+2026-05-24 07:23:26,802 - scheduler_agent - INFO - [Backend] Found 1 due messages to process.
+2026-05-24 07:23:26,802 - scheduler_agent - INFO - [Backend] Attempting to send message 1 to @testuser (Retry: 0).
+2026-05-24 07:23:26,802 - scheduler_agent - INFO - [Backend] Successfully sent message 1 to @testuser.
+2026-05-24 07:23:26,803 - scheduler_agent - INFO - [Backend] Found 1 due messages to process.
+2026-05-24 07:23:26,804 - scheduler_agent - INFO - [Backend] Attempting to send message 2 to @failuser (Retry: 0).
+2026-05-24 07:23:26,805 - scheduler_agent - INFO - [Backend] Found 1 due messages to process.
+2026-05-24 07:23:26,805 - scheduler_agent - INFO - [Backend] Attempting to send message 3 to @maxuser (Retry: 2).
+2026-05-24 07:23:26,806 - scheduler_agent - INFO - [Backend] Scheduler started. Checking every 60 seconds.
+2026-05-24 07:23:26,806 - scheduler_agent - INFO - [Backend] Scheduler shut down.
+2026-05-24 07:23:26,809 - telegram_tool - INFO - Successfully sent message to test_user
+2026-05-24 07:30:23,749 - main_cli - INFO - User input received: Tell Jisoo tomorrow at 9 AM that I finished the report
+2026-05-24 07:30:23,750 - main_cli - INFO - Successfully scheduled message 123 for Jisoo
+2026-05-24 07:30:23,751 - scheduler_agent - INFO - [Backend] Found 1 due messages to process.
+2026-05-24 07:45:50,134 - main_cli - INFO - User input received: Tell Jisoo tomorrow at 9 AM that I finished the report
+2026-05-24 07:45:50,134 - main_cli - INFO - Successfully scheduled message 123 for Jisoo
+2026-05-24 07:45:50,135 - scheduler_agent - INFO - [Backend] Found 1 due messages to process.
+2026-05-24 07:45:50,136 - scheduler_agent - INFO - [Backend] Attempting to send message 123 to Jisoo (Retry: 0).
