@@ -1,9 +1,9 @@
 {
-  "cycle_reasoning": "Prioritizing QA review of core modules (PR #6, #18, #21) while Backend starts on the Scheduler Agent.",
+  "cycle_reasoning": "Core modules are pending review; Backend moves to the Scheduler agent while QA and Architect handle the PR pipeline.",
   "current_phase": "development",
   "assignments": [
-    {"role": "qa", "turns": 2, "priority": "P0"},
     {"role": "backend", "turns": 3, "priority": "P0"},
-    {"role": "architect", "turns": 1, "priority": "P1"}
+    {"role": "qa", "turns": 2, "priority": "P0"},
+    {"role": "architect", "turns": 1, "priority": "P0"}
   ]
 }
