@@ -1,116 +1,128 @@
 from __future__ import annotations
 
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, AsyncMock
 from datetime import datetime, timezone, timedelta
 from agents.scheduler_agent import SchedulerAgent
 from schemas.models import ScheduledMessage
 
 @pytest.fixture
 def mock_db_tool():
-    with patch('agents.scheduler_agent.get_due_messages') as mock:
+    with patch('agents.scheduler_agent.db_tool') as mock:
         yield mock
 
 @pytest.fixture
 def mock_telegram_tool():
-    with patch('agents.scheduler_agent.send_telegram_message') as mock:
+    with patch('agents.scheduler_agent.telegram_tool') as mock:
         yield mock
 
 @pytest.fixture
-def mock_db_actions():
-    with patch('agents.scheduler_agent.mark_processing') as mock_proc, \
-         patch('agents.scheduler_agent.mark_sent') as mock_sent, \
-         patch('agents.scheduler_agent.mark_failed') as mock_fail, \
-         patch('agents.scheduler_agent.mark_retry') as mock_retry:
-        yield {
-            'processing': mock_proc,
-            'sent': mock_sent,
-            'failed': mock_fail,
-            'retry': mock_retry
-        }
+def scheduler_agent():
+    return SchedulerAgent(check_interval=10)
 
 @pytest.mark.asyncio
-async def test_process_due_messages_empty(mock_db_tool, mock_telegram_tool):
-    # Setup: No messages due
-    mock_db_tool.return_value = []
+async def test_check_and_send_messages_no_due(scheduler_agent, mock_db_tool, mock_telegram_tool):
+    \"\"\"Test that nothing happens if there are no due messages.\"\"\"
+    mock_db_tool.get_due_messages.return_value = []
     
-    agent = SchedulerAgent()
-    await agent.process_due_messages()
+    await scheduler_agent.check_and_send_messages()
     
-    # Verify: Telegram tool should not be called
-    mock_telegram_tool.assert_not_called()
+    mock_telegram_tool.send_telegram_message.assert_not_called()
+    mock_db_tool.mark_processing.assert_not_called()
 
 @pytest.mark.asyncio
-async def test_process_due_messages_success(mock_db_tool, mock_db_actions, mock_telegram_tool):
-    # Setup: One message due
+async def test_check_and_send_messages_success(scheduler_agent, mock_db_tool, mock_telegram_tool):
+    \"\"\"Test successful message delivery.\"\"\"
     msg = ScheduledMessage(
         id=1,
-        target="test_user",
-        target_type="username",
+        target=\"@testuser\",
+        target_type=\"username\",
         scheduled_time=datetime.now(timezone.utc),
-        message="Hello World",
-        status="pending"
+        message=\"Hello!\",
+        status=\"pending\",
+        retry_count=0,
+        created_at=datetime.now(timezone.utc),
+        sent_at=None,
+        error_message=None
     )
-    mock_db_tool.return_value = [msg]
-    mock_telegram_tool.return_value = {"success": True, "target": "test_user", "error": None}
+    mock_db_tool.get_due_messages.return_value = [msg]
+    mock_telegram_tool.send_telegram_message.return_value = {\"success\": True, \"target\": \"@testuser\", \"error\": None}
     
-    agent = SchedulerAgent()
-    await agent.process_due_messages()
+    await scheduler_agent.check_and_send_messages()
     
-    # Verify: Correct flow
-    mock_db_actions['processing'].assert_called_once_with(1)
-    mock_telegram_tool.assert_called_once_with("test_user", "Hello World")
-    mock_db_actions['sent'].assert_called_once_with(1)
+    mock_db_tool.mark_processing.assert_called_once_with(1)
+    mock_telegram_tool.send_telegram_message.assert_called_once_with(\"@testuser\", \"Hello!\")
+    mock_db_tool.mark_sent.assert_called_once_with(1)
 
 @pytest.mark.asyncio
-async def test_process_due_messages_retry(mock_db_tool, mock_db_actions, mock_telegram_tool):
-    # Setup: One message due with retry count 0
-    msg = ScheduledMessage(
-        id=1,
-        target="test_user",
-        target_type="username",
-        scheduled_time=datetime.now(timezone.utc),
-        message="Hello World",
-        status="pending",
-        retry_count=0
-    )
-    mock_db_tool.return_value = [msg]
-    mock_telegram_tool.return_value = {"success": False, "target": "test_user", "error": "FloodWait"}
-    
-    agent = SchedulerAgent()
-    await agent.process_due_messages()
-    
-    # Verify: Should mark for retry
-    mock_db_actions['processing'].assert_called_once_with(1)
-    mock_db_actions['retry'].assert_called_once_with(1, "FloodWait")
-    mock_db_actions['sent'].assert_not_called()
-
-@pytest.mark.asyncio
-async def test_process_due_messages_max_retries(mock_db_tool, mock_db_actions, mock_telegram_tool):
-    # Setup: One message due with retry count 2 (max)
+async def test_check_and_send_messages_retry(scheduler_agent, mock_db_tool, mock_telegram_tool):
+    \"\"\"Test that a failed message is scheduled for retry if retry_count < 2.\"\"\"
     msg = ScheduledMessage(
         id=2,
-        target="test_user",
-        target_type="username",
+        target=\"@testuser\",
+        target_type=\"username\",
         scheduled_time=datetime.now(timezone.utc),
-        message="Hello World",
-        status="pending",
-        retry_count=2
+        message=\"Hello!\",
+        status=\"pending\",
+        retry_count=0,
+        error_message=None,
+        created_at=datetime.now(timezone.utc),
+        sent_at=None
     )
-    mock_db_tool.return_value = [msg]
-    mock_telegram_tool.return_value = {"success": False, "target": "test_user", "error": "Network Error"}
+    mock_db_tool.get_due_messages.return_value = [msg]
+    mock_telegram_tool.send_telegram_message.return_value = {\"success\": False, \"target\": \"@testuser\", \"error\": \"Network Error\"}
     
-    agent = SchedulerAgent()
-    await agent.process_due_messages()
+    await scheduler_agent.check_and_send_messages()
     
-    # Verify: Should mark as permanently failed
-    mock_db_actions['processing'].assert_called_once_with(2)
-    mock_db_actions['failed'].assert_called_once_with(2, "Max retries reached. Last error: Network Error")
+    mock_db_tool.mark_processing.assert_called_once_with(2)
+    mock_db_tool.mark_retry.assert_called_once_with(2, \"Network Error\")
+    mock_db_tool.mark_sent.assert_not_called()
 
 @pytest.mark.asyncio
-async def test_scheduler_start_stop(mock_db_tool):
-    # This tests the scheduler's configuration, not the loop
-    agent = SchedulerAgent()
-    agent.start()
-    # We don't need to actually wait for the loop, just verifying it doesn't crash on start
-    agent.shutdown()
+async def test_check_and_send_messages_fail_permanent(scheduler_agent, mock_db_tool, mock_telegram_tool):
+    \"\"\"Test that a message is marked failed after max retries (2).\"\"\"
+    msg = ScheduledMessage(
+        id=3,
+        target=\"@testuser\",
+        target_type=\"username\",
+        scheduled_time=datetime.now(timezone.utc),
+        message=\"Hello!\",
+        status=\"pending\",
+        retry_count=2,
+        error_message=None,
+        created_at=datetime.now(timezone.utc),
+        sent_at=None
+    )
+    mock_db_tool.get_due_messages.return_value = [msg]
+    mock_telegram_tool.send_telegram_message.return_value = {\"success\": False, \"target\": \"@testuser\", \"error\": \"Unauthorized\"}
+    
+    await scheduler_agent.check_and_send_messages()
+    
+    mock_db_tool.mark_processing.assert_called_once_with(3)
+    mock_db_tool.mark_retry.assert_not_called()
+    mock_db_tool.mark_failed.assert_called_once_with(3, \"Unauthorized\")
+
+@pytest.mark.asyncio
+async def test_check_and_send_messages_exception(scheduler_agent, mock_db_tool, mock_telegram_tool):
+    \"\"\"Test that unexpected exceptions are handled and result in retry or failure.\"\"\"
+    msg = ScheduledMessage(
+        id=4,
+        target=\"@testuser\",
+        target_type=\"username\",
+        # Fix: ensure scheduled_time is timezone aware
+        scheduled_time=datetime.now(timezone.utc),
+        message=\"Hello!\",
+        status=\"pending\",
+        retry_count=0,
+        error_message=None,
+        created_at=datetime.now(timezone.utc),
+        sent_at=None
+    )
+    mock_db_tool.get_due_messages.return_value = [msg]
+    # Force an exception during the send process
+    mock_telegram_tool.send_telegram_message.side_effect = Exception(\"Critical failure\")
+    
+    await scheduler_agent.check_and_send_messages()
+    
+    mock_db_tool.mark_processing.assert_called_once_with(4)
+    mock_db_tool.mark_retry.assert_called_once_with(4, \"Critical failure\")
