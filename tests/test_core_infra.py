@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import os
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from tools.config import Config
 from tools.db_tool import (
     initialize_database, 
@@ -13,9 +15,24 @@ from tools.db_tool import (
 )
 from schemas.models import ParsedMessageCommand
 
+# Use a separate database for testing to avoid polluting the main database
+TEST_DB_PATH = "database/test_messages.db"
+Config.DB_PATH = TEST_DB_PATH
+
+def setup_module():
+    """Ensure the test database is fresh before running tests."""
+    if Path(TEST_DB_PATH).exists():
+        os.remove(TEST_DB_PATH)
+    initialize_database()
+
+def teardown_module():
+    """Clean up the test database after running tests."""
+    if Path(TEST_DB_PATH).exists():
+        os.remove(TEST_DB_PATH)
+
 def test_db_lifecycle():
     """Test the full lifecycle of a scheduled message in the database."""
-    initialize_database()
+    # initialize_database() is called in setup_module
     
     msg = ParsedMessageCommand(
         target="test_user",
@@ -46,8 +63,6 @@ def test_db_lifecycle():
 
 def test_db_failure_retry():
     """Test marking a message as failed and checking retry count."""
-    initialize_database()
-    
     msg = ParsedMessageCommand(
         target="fail_user",
         target_type="phone",
@@ -63,5 +78,9 @@ def test_db_failure_retry():
     assert not any(m.id == msg_id for m in pending)
 
 if __name__ == "__main__":
-    test_db_lifecycle()
-    test_db_failure_retry()
+    setup_module()
+    try:
+        test_db_lifecycle()
+        test_db_failure_retry()
+    finally:
+        teardown_module()
