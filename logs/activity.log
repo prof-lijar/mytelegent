@@ -27,3 +27,13 @@
 2026-05-24 06:47:47,440 - scheduler_agent - INFO - [Backend] Scheduler started. Checking every 60 seconds.
 2026-05-24 06:47:47,440 - scheduler_agent - INFO - [Backend] Scheduler shut down.
 2026-05-24 06:47:47,444 - telegram_tool - INFO - Successfully sent message to test_user
+2026-05-24 08:31:09,595 - scheduler_agent - INFO - [Backend] Found 1 due messages to process.
+2026-05-24 08:31:09,595 - scheduler_agent - INFO - [Backend] Attempting to send message 1 to @testuser (Retry: 0).
+2026-05-24 08:31:09,595 - scheduler_agent - INFO - [Backend] Successfully sent message 1 to @testuser.
+2026-05-24 08:31:09,597 - scheduler_agent - INFO - [Backend] Found 1 due messages to process.
+2026-05-24 08:31:09,597 - scheduler_agent - INFO - [Backend] Attempting to send message 2 to @failuser (Retry: 0).
+2026-05-24 08:31:09,599 - scheduler_agent - INFO - [Backend] Found 1 due messages to process.
+2026-05-24 08:31:09,599 - scheduler_agent - INFO - [Backend] Attempting to send message 3 to @maxuser (Retry: 2).
+2026-05-24 08:31:09,600 - scheduler_agent - INFO - [Backend] Scheduler started. Checking every 60 seconds.
+2026-05-24 08:31:09,600 - scheduler_agent - INFO - [Backend] Scheduler shut down.
+2026-05-24 08:31:09,604 - telegram_tool - INFO - Successfully sent message to test_user
