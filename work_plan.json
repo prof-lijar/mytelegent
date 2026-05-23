@@ -1,9 +1,17 @@
 {
+<<<<<<< HEAD
   "cycle_reasoning": "Review and merge the Telegram tool (PR #21) and proceed with the Main CLI and Logging integration.",
   "current_phase": "development",
   "assignments": [
     {"role": "qa", "turns": 2, "priority": "P0"},
     {"role": "architect", "turns": 2, "priority": "P0"},
+=======
+  "cycle_reasoning": "Architect needs to finalize core infra, QA needs to review the parsing agent, and Backend moves to the Telegram tool.",
+  "current_phase": "development",
+  "assignments": [
+    {"role": "architect", "turns": 1, "priority": "P0"},
+    {"role": "qa", "turns": 2, "priority": "P0"},
+>>>>>>> backend/telegram-tool
     {"role": "backend", "turns": 3, "priority": "P0"}
   ]
 }
