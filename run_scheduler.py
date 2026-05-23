@@ -1,38 +1,36 @@
 from __future__ import annotations
 
 import asyncio
-import logging
+import signal
 import sys
+from tools.logging_tool import setup_logging, get_logger
 from agents.scheduler_agent import SchedulerAgent
 
-# Configure logging to file and console
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler(\"logs/activity.log\"),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
+logger = get_logger(__name__)
 
-async def main():
-    \"\"\"Main entry point for the scheduler process.\"\"\"
-    print(\"--- tiny-jarvis Scheduler Started ---\")
-    print(\"Starting background monitor for scheduled messages...\")
+async def main() -> None:
+    \"\"\"Main entry point for the background scheduler process.\"\"\"
+    setup_logging()
+    logger.info(\"[Backend] Starting the Scheduler Process...\")
     
-    agent = SchedulerAgent(check_interval=60)
-    agent.start()
+    scheduler_agent = SchedulerAgent()
+    scheduler_agent.start()
     
     try:
-        # Keep the main thread alive while the scheduler runs in the background
+        # Keep the process alive
         while True:
             await asyncio.sleep(3600)
+    except asyncio.CancelledError:
+        logger.info(\"[Backend] Scheduler process cancelled.\")
     except KeyboardInterrupt:
-        print(\"\\nStopping scheduler...\")
-        agent.stop()
-    except Exception as e:
-        print(f\"Unexpected error: {e}\")
-        agent.stop()
+        logger.info(\"[Backend] Scheduler process interrupted by user.\")
+    finally:
+        scheduler_agent.shutdown()
+        logger.info(\"[Backend] Scheduler process exited.\")
 
 if __name__ == \"__main__\":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        # Avoid printing traceback on Ctrl+C
+        sys.exit(0)
