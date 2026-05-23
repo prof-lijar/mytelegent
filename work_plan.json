@@ -1,8 +1,8 @@
 {
-  "cycle_reasoning": "Resolve critical merge conflict markers in core tools that are currently breaking the application.",
-  "current_phase": "development",
+  "cycle_reasoning": "Verify and merge the critical fix for merge conflict markers to restore system stability.",
+  "current_phase": "quality",
   "assignments": [
-    {"role": "backend", "turns": 4, "priority": "P0"},
-    {"role": "qa", "turns": 1, "priority": "P1"}
+    {"role": "qa", "turns": 2, "priority": "P0"},
+    {"role": "architect", "turns": 1, "priority": "P0"}
   ]
 }
