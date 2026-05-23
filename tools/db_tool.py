@@ -143,3 +143,7 @@ def _row_to_scheduled_message(row: tuple) -> ScheduledMessage:
         sent_at=datetime.fromisoformat(row[8]) if row[8] else None,
         error_message=row[9],
     )
+
+def get_db_connection():
+    """Return a sqlite3 connection."""
+    return sqlite3.connect(Config.DB_PATH)
