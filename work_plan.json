@@ -1,8 +1,17 @@
 {
+<<<<<<< HEAD
   "cycle_reasoning": "Merge approved core modules and begin final integration of the Main CLI and Logging.",
   "current_phase": "development",
   "assignments": [
     {"role": "architect", "turns": 2, "priority": "P0"},
     {"role": "backend", "turns": 4, "priority": "P0"}
+=======
+  "cycle_reasoning": "Core modules are pending review; Backend moves to the Scheduler agent while QA and Architect handle the PR pipeline.",
+  "current_phase": "development",
+  "assignments": [
+    {"role": "backend", "turns": 3, "priority": "P0"},
+    {"role": "qa", "turns": 2, "priority": "P0"},
+    {"role": "architect", "turns": 1, "priority": "P0"}
+>>>>>>> backend/implement-scheduler
   ]
 }
