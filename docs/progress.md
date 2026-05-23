@@ -1,20 +1,21 @@
 # Project Progress
 
 ## Current Phase
-Quality — Reviewing and merging the final core integration (PR #31) and preparing for end-to-end validation.
+Development (Recovery) — Fixing corrupted source files containing merge conflict markers.
 
 ## What Was Completed This Cycle
-- Assigned QA and Architect to review and merge PR #31.
+- Identified critical corruption in core tool files (`tools/local_llm_tool.py`, `tools/config.py`, `tools/db_tool.py`) caused by merge conflict markers.
+- Created Issue #32 to resolve these conflicts.
 
 ## What Is In Progress
-- [PR #31] Main CLI and Logging Integration (Awaiting QA review and Architect merge).
+- [Issue #32] Resolve merge conflict markers in core tools.
 
 ## What Is Blocked
-- None.
+- End-to-end validation is blocked until the source code is cleaned of conflict markers.
 
 ## Next Cycle Plan
-- Merge PR #31.
-- Perform final end-to-end smoke tests of the CLI -> Parser -> DB -> Scheduler -> Telegram flow.
+- Backend to resolve conflict markers.
+- QA to verify the fix and run smoke tests.
 
 ## Module Checklist
 - [x] Config loader (.env, python-dotenv)
