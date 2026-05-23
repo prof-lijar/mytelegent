@@ -9,82 +9,60 @@ from tools.logging_tool import get_logger
 
 logger = get_logger("main_cli")
 
-def print_header():
-    """Prints a simple CLI header."""
-    print("\\n" + "="*40)
-    print("  TINY-JARVIS: Personal AI Agent")
-    print("="*40)
-
-def main():
-    """Main entry point for the Tiny-Jarvis CLI."""
+def main() -> None:
+    \"\"\"Main entry point for the tiny-jarvis CLI.\"\"\"
     # Initialize DB
-    try:
-        initialize_database()
-        logger.info("CLI started and database initialized.")
-    except Exception as e:
-        logger.error(f"Failed to initialize database during CLI startup: {e}", exc_info=True)
-        print("Error: Database initialization failed. Check logs/errors.log.")
-        sys.exit(1)
-
-    # Initialize Parsing Agent
-    try:
-        parser = ParsingAgent()
-        logger.info("Parsing agent initialized successfully.")
-    except Exception as e:
-        logger.error(f"Failed to initialize parsing agent: {e}", exc_info=True)
-        print("Error: Parsing agent initialization failed. Check logs/errors.log.")
-        sys.exit(1)
-
-    print_header()
+    initialize_database()
     
+    print(\"--- tiny-jarvis AI Agent CLI ---\")
+    print(\"Enter a natural language command to schedule a message (or 'exit' to quit).\")
+    print(\"Example: 'Tell Jisoo tomorrow at 9 AM that I finished the report'\")
+    print(\"----------------------------------------------------------------------\")
+
+    parser = ParsingAgent()
+
     while True:
         try:
-            user_input = input("\n Enter a command (or 'exit' to quit): ").strip()
+            user_input = input(\"\\n> \").strip()
             if not user_input:
                 continue
-            if user_input.lower() in ('exit', 'quit', 'q'):
-                print("Goodbye!")
+            if user_input.lower() in (\"exit\", \"quit\", \"q\"):
+                print(\"Exiting...\")
                 break
+
+            print(\"Parsing your command...\", end=\" \", flush=True)
+            parsed_cmd = parser.parse_command(user_input)
             
-            logger.info(f"User input received: {user_input}")
-            
-            # 1. Parse the command
-            parsed = parser.parse_command(user_input)
-            
-            if parsed is None:
-                logger.warning(f"Failed to parse input: {user_input}")
-                print("Could not understand the command. Please rephrase it.")
+            if parsed_cmd is None:
+                print(\"Failed. Please rephrase your command.\")
+                logger.warning(f\"User command parsing failed: {user_input}\")
                 continue
             
-            # 2. Present for confirmation
-            print("\n--- Parsed Command ---")
-            print(f"Recipient: {parsed.target} ({parsed.target_type})")
-            print(f"Message:   {parsed.message}")
-            print(f"Scheduled: {parsed.scheduled_time}")
-            print(f"Confidence: {parsed.confidence:.2f}")
-            print("----------------------")
+            print(\"Done!\", flush=True)
             
-            confirm = input("Confirm scheduling? (y/n): ").strip().lower()
-            if confirm != 'y':
-                logger.info("User declined to schedule the message.")
-                print("Command cancelled.")
-                continue
+            # Display parsed results for confirmation
+            print(\"\\n--- Parsed Command Details ---\")
+            print(f\"Recipient: {parsed_cmd.target} ({parsed_cmd.target_type})\")
+            print(f\"Scheduled Time: {parsed_cmd.scheduled_time.strftime('%Y-%m-%d %H:%M:%S %Z')}\")
+            print(f\"Message: {parsed_cmd.message}\")
+            print(f\"Confidence: {parsed_cmd.confidence:.2f}\")
+            print(\"-----------------------------\")
             
-            # 3. Save to database
-            try:
-                msg_id = insert_scheduled_message(parsed)
-                logger.info(f"Successfully scheduled message {msg_id} for {parsed.target}.")
-                print(f"Success! Message scheduled with ID: {msg_id}")
-            except Exception as e:
-                logger.error(f"Database error while scheduling: {e}", exc_info=True)
-                print("Error: Failed to save message to database. Check logs/errors.log.")
-                
+            confirm = input(\"Confirm scheduling? (y/n): \").lower().strip()
+            if confirm == 'y':
+                msg_id = insert_scheduled_message(parsed_cmd)
+                print(f\"\\nSuccess! Message scheduled with ID: {msg_id}\")
+                logger.info(f\"User confirmed and scheduled message: {user_input} -> ID: {msg_id}\")
+            else:
+                print(\"\\nCommand cancelled by user.\")
+                logger.info(f\"User cancelled scheduling for command: {user_input}\")
+            
         except KeyboardInterrupt:
-            print("\nGoodbye!")
+            print(\"\\nExiting...\")
             break
         except Exception as e:
-            logger.error(f"Unexpected error in CLI loop: {e}", exc_info=True)
-            print("An unexpected error occurred. Check logs/errors.log.")
+            print(f\"\\nUnexpected error: {e}\")
+            logger.error(f\"Unexpected error in CLI loop: {e}\", exc_info=True)
 
-if __name__ == "__main__":
+if __name__ == \"__main__\":
     main()
