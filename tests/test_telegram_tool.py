@@ -5,7 +5,6 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 from tools.telegram_tool import send_telegram_message
 from telethon import errors
-from telethon.errors import api as telegram_api
 
 @pytest.mark.asyncio
 async def test_send_message_success():
@@ -30,8 +29,8 @@ async def test_send_message_invalid_user():
     """Test handling of UserIdInvalidError."""
     with patch('tools.telegram_tool.TelegramClient') as mock_client_class:
         mock_client = AsyncMock()
-        # Use the explicitly imported telegram_api
-        mock_client.send_message.side_effect = telegram_api.UserIdInvalidError("Invalid user")
+        # Use the telethon.errors directly
+        mock_client.send_message.side_effect = errors.UserIdInvalidError("Invalid user")
         mock_client_class.return_value.__aenter__.return_value = mock_client
         
         with patch('asyncio.sleep', new_callable=AsyncMock):
