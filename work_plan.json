@@ -1,8 +1,8 @@
 {
-  "cycle_reasoning": "Verify and merge the critical fix for merge conflict markers to restore system stability.",
+  "cycle_reasoning": "Recovery from merge conflicts is complete. Moving to full system validation to ensure no regressions were introduced.",
   "current_phase": "quality",
   "assignments": [
-    {"role": "qa", "turns": 2, "priority": "P0"},
-    {"role": "architect", "turns": 1, "priority": "P0"}
+    {"role": "qa", "turns": 3, "priority": "P0"},
+    {"role": "architect", "turns": 1, "priority": "P1"}
   ]
 }
