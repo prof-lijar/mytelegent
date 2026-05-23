@@ -2,57 +2,56 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Optional
 
-# Setup log directories
+# Create logs directory if it doesn't exist
 LOG_DIR = Path("logs")
 LOG_DIR.mkdir(exist_ok=True)
 
 ACTIVITY_LOG = LOG_DIR / "activity.log"
 ERROR_LOG = LOG_DIR / "errors.log"
 
-class AppLogger:
-    \"\"\"Custom logger to handle activity and error logs separately.\"\"\"
-    
-    def __init__(self, name: str = \"tiny-jarvis\") -> None:
-        self.name = name
-        self._activity_logger = self._setup_logger(\"activity\", ACTIVITY_LOG)
-        self._error_logger = self._setup_logger(\"error\", ERROR_LOG)
+class LevelFilter(logging.Filter):
+    """Filter that allows only logs up to a certain level."""
+    def __init__(self, max_level: int):
+        super().__init__()
+        self.max_level = max_level
 
-    def _setup_logger(self, name: str, log_file: Path) -> logging.Logger:
-        logger = logging.getLogger(f\"{self.name}.{name}\")
-        logger.setLevel(logging.INFO)
-        
-        # Avoid duplicate handlers if initialized multiple times
-        if not logger.handlers:
-            handler = logging.FileHandler(log_file, encoding=\"utf-8\")
-            formatter = logging.Formatter(
-                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-            )
-            handler.setFormatter(formatter)
-            logger.addHandler(handler)
-        
+    def filter(self, record):
+        return record.levelno <= self.max_level
+
+def setup_logging() -> logging.Logger:
+    """Initialize the logging system with dual handlers for activity and errors."""
+    logger = logging.getLogger("tiny_jarvis")
+    logger.setLevel(logging.DEBUG)
+
+    if logger.hasHandlers():
         return logger
 
-    def info(self, message: str) -> None:
-        \"\"\"Log a general activity message.\"\"\"
-        self._activity_logger.info(message)
+    formatter = logging.Formatter(
+        "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    )
 
-    def error(self, message: str, exc_info: Optional[bool] = False) -> None:
-        \"\"\"Log an error message.\"\"\"
-        self._error_logger.error(message, exc_info=exc_info)
+    # Activity Log: DEBUG, INFO, WARNING
+    activity_handler = logging.FileHandler(ACTIVITY_LOG, encoding="utf-8")
+    activity_handler.setLevel(logging.DEBUG)
+    activity_handler.setFormatter(formatter)
+    activity_handler.addFilter(LevelFilter(logging.WARNING))
 
-    def warning(self, message: str) -> None:
-        \"\"\"Log a warning message.\"\"\"
-        self._activity_logger.warning(message)
+    # Error Log: ERROR, CRITICAL
+    error_handler = logging.FileHandler(ERROR_LOG, encoding="utf-8")
+    error_handler.setLevel(logging.ERROR)
+    error_handler.setFormatter(formatter)
 
-_loggers_cache = {}
+    logger.addHandler(activity_handler)
+    logger.addHandler(error_handler)
 
-def get_logger(name: str) -> AppLogger:
-    \"\"\"Get or create a logger instance for the given name.\"\"\"
-    if name not in _loggers_cache:
-        _loggers_cache[name] = AppLogger(name)
-    return _loggers_cache[name]
+    return logger
 
-# Default singleton for general use
-logger = get_logger(\"main\")
+def get_logger(name: str) -> logging.Logger:
+    """Get a logger instance with the specified name."""
+    # Initialize the root-like logger first
+    setup_logging()
+    return logging.getLogger(f"tiny_jarvis.{name}")
+
+# Initialize logger instance for use across the app
+logger = setup_logging()
