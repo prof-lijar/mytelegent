@@ -1,12 +1,36 @@
 from __future__ import annotations
 
+import base64
+import hashlib
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional
 
+from cryptography.fernet import Fernet
 from tools.config import Config
 from schemas.models import ScheduledMessage, ParsedMessageCommand
+
+def _get_cipher() -> Fernet:
+    """Initialize Fernet cipher using the SECRET_KEY from config."""
+    key_str = Config.SECRET_KEY
+    if not key_str:
+        raise EnvironmentError("SECRET_KEY must be set in the environment for message encryption.")
+    
+    # Derive a 32-byte key for Fernet from the provided secret string
+    key_bytes = hashlib.sha256(key_str.encode()).digest()
+    base64_key = base64.urlsafe_b64encode(key_bytes)
+    return Fernet(base64_key)
+
+def encrypt_message(text: str) -> str:
+    """Encrypt a plain text string."""
+    cipher = _get_cipher()
+    return cipher.encrypt(text.encode()).decode()
+
+def decrypt_message(token: str) -> str:
+    """Decrypt an encrypted token string."""
+    cipher = _get_cipher()
+    return cipher.decrypt(token.encode()).decode()
 
 def initialize_database() -> None:
     """Initialize the SQLite database and create tables."""
@@ -34,7 +58,8 @@ def initialize_database() -> None:
         conn.close()
 
 def insert_scheduled_message(parsed_command: ParsedMessageCommand) -> int:
-    """Insert a scheduled message into the database."""
+    """Insert a scheduled message into the database with encryption."""
+    encrypted_msg = encrypt_message(parsed_command.message)
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
@@ -48,7 +73,7 @@ def insert_scheduled_message(parsed_command: ParsedMessageCommand) -> int:
                     parsed_command.target,
                     parsed_command.target_type,
                     parsed_command.scheduled_time.isoformat(),
-                    parsed_command.message,
+                    encrypted_msg,
                     'pending',
                     datetime.now(timezone.utc).isoformat(),
                 ),
@@ -58,7 +83,7 @@ def insert_scheduled_message(parsed_command: ParsedMessageCommand) -> int:
         conn.close()
 
 def get_due_messages(now: datetime) -> List[ScheduledMessage]:
-    """Get messages that are due for sending."""
+    """Get messages that are due for sending and decrypt them."""
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         cursor = conn.execute(
@@ -115,7 +140,7 @@ def mark_failed(message_id: int, error: str) -> None:
         conn.close()
 
 def list_pending_messages() -> List[ScheduledMessage]:
-    """List all pending messages."""
+    """List all pending messages and decrypt them."""
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         cursor = conn.execute(
@@ -130,13 +155,13 @@ def list_pending_messages() -> List[ScheduledMessage]:
         conn.close()
 
 def _row_to_scheduled_message(row: tuple) -> ScheduledMessage:
-    """Helper to convert database row to ScheduledMessage model."""
+    """Helper to convert database row to ScheduledMessage model, decrypting the message."""
     return ScheduledMessage(
         id=row[0],
         target=row[1],
         target_type=row[2],
         scheduled_time=datetime.fromisoformat(row[3]),
-        message=row[4],
+        message=decrypt_message(row[4]),
         status=row[5],
         retry_count=row[6],
         created_at=datetime.fromisoformat(row[7]),
