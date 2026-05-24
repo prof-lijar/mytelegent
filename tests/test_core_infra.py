@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import sqlite3
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from tools.config import Config
@@ -18,6 +19,7 @@ from schemas.models import ParsedMessageCommand
 # Use a separate database for testing to avoid polluting the main database
 TEST_DB_PATH = "database/test_messages.db"
 Config.DB_PATH = TEST_DB_PATH
+Config.SECRET_KEY = "test-secret-key-for-encryption-purposes-only"
 
 def setup_module():
     """Ensure the test database is fresh before running tests."""
@@ -29,6 +31,29 @@ def teardown_module():
     """Clean up the test database after running tests."""
     if Path(TEST_DB_PATH).exists():
         os.remove(TEST_DB_PATH)
+
+def test_db_encryption():
+    """Verify that messages are stored encrypted in the database."""
+    msg_text = "Secret Message 123"
+    msg = ParsedMessageCommand(
+        target="encrypt_user",
+        target_type="username",
+        scheduled_time=datetime.now(timezone.utc),
+        message=msg_text,
+        confidence=1.0
+    )
+    
+    msg_id = insert_scheduled_message(msg)
+    
+    # Direct DB check to ensure it is NOT plain text
+    conn = sqlite3.connect(Config.DB_PATH)
+    cursor = conn.execute("SELECT message FROM scheduled_messages WHERE id = ?", (msg_id,))
+    row = cursor.fetchone()
+    conn.close()
+    
+    stored_message = row[0]
+    assert stored_message != msg_text, "Message should be encrypted in the database"
+    assert len(stored_message) > len(msg_text), "Encrypted message should be longer than plain text"
 
 def test_db_lifecycle():
     """Test the full lifecycle of a scheduled message in the database."""
@@ -80,6 +105,7 @@ def test_db_failure_retry():
 if __name__ == "__main__":
     setup_module()
     try:
+        test_db_encryption()
         test_db_lifecycle()
         test_db_failure_retry()
     finally:

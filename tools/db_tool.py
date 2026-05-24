@@ -1,21 +1,48 @@
 from __future__ import annotations
 
 import sqlite3
+import base64
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional
 
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes
+
 from tools.config import Config
 from schemas.models import ScheduledMessage, ParsedMessageCommand
 
+def _get_fernet() -> Fernet:
+    \"\"\"Initialize Fernet with the secret key from config.\"\"\"
+    secret = Config.SECRET_KEY
+    if not secret:
+        raise EnvironmentError(\"SECRET_KEY must be set in the environment for message encryption.\")
+    
+    # Derive a 32-byte key from the secret string using SHA256
+    key_bytes = hashes.Hash(hashes.SHA256())
+    key_bytes.update(secret.encode())
+    digest = key_bytes.finalize()
+    fernet_key = base64.urlsafe_b64encode(digest)
+    return Fernet(fernet_key)
+
+def encrypt_message(text: str) -> str:
+    \"\"\"Encrypt a plain text message.\"\"\"
+    f = _get_fernet()
+    return f.encrypt(text.encode()).decode()
+
+def decrypt_message(token: str) -> str:
+    \"\"\"Decrypt an encrypted message token.\"\"\"
+    f = _get_fernet()
+    return f.decrypt(token.encode()).decode()
+
 def initialize_database() -> None:
-    """Initialize the SQLite database and create tables."""
+    \"\"\"Initialize the SQLite database and create tables.\"\"\"
     Config.ensure_db_dir()
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
             conn.execute(
-                """
+                \"\"\"
                 CREATE TABLE IF NOT EXISTS scheduled_messages (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     target TEXT NOT NULL,
@@ -28,27 +55,28 @@ def initialize_database() -> None:
                     sent_at TEXT,
                     error_message TEXT
                 )
-                """,
+                \"\"\",
             )
     finally:
         conn.close()
 
 def insert_scheduled_message(parsed_command: ParsedMessageCommand) -> int:
-    """Insert a scheduled message into the database."""
+    \"\"\"Insert a scheduled message into the database with encryption.\"\"\"
+    encrypted_msg = encrypt_message(parsed_command.message)
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
             cursor = conn.execute(
-                """
+                \"\"\"
                 INSERT INTO scheduled_messages (
                     target, target_type, scheduled_time, message, status, created_at
                 ) VALUES (?, ?, ?, ?, ?, ?)
-                """,
+                \"\"\",
                 (
                     parsed_command.target,
                     parsed_command.target_type,
                     parsed_command.scheduled_time.isoformat(),
-                    parsed_command.message,
+                    encrypted_msg,
                     'pending',
                     datetime.now(timezone.utc).isoformat(),
                 ),
@@ -58,16 +86,16 @@ def insert_scheduled_message(parsed_command: ParsedMessageCommand) -> int:
         conn.close()
 
 def get_due_messages(now: datetime) -> List[ScheduledMessage]:
-    """Get messages that are due for sending."""
+    \"\"\"Get messages that are due for sending.\"\"\"
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         cursor = conn.execute(
-            """
+            \"\"\"
             SELECT id, target, target_type, scheduled_time, message, status, 
                    retry_count, created_at, sent_at, error_message 
             FROM scheduled_messages 
             WHERE status = 'pending' AND scheduled_time <= ?
-            """,
+            \"\"\",
             (now.isoformat(),),
         )
         return [_row_to_scheduled_message(row) for row in cursor.fetchall()]
@@ -75,68 +103,74 @@ def get_due_messages(now: datetime) -> List[ScheduledMessage]:
         conn.close()
 
 def mark_processing(message_id: int) -> None:
-    """Mark a message as processing."""
+    \"\"\"Mark a message as processing.\"\"\"
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
             conn.execute(
-                "UPDATE scheduled_messages SET status = 'processing' WHERE id = ?",
+                \"UPDATE scheduled_messages SET status = 'processing' WHERE id = ?\",
                 (message_id,),
             )
     finally:
         conn.close()
 
 def mark_sent(message_id: int) -> None:
-    """Mark a message as sent."""
+    \"\"\"Mark a message as sent.\"\"\"
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
             conn.execute(
-                "UPDATE scheduled_messages SET status = 'sent', sent_at = ? WHERE id = ?",
+                \"UPDATE scheduled_messages SET status = 'sent', sent_at = ? WHERE id = ?\",
                 (datetime.now(timezone.utc).isoformat(), message_id),
             )
     finally:
         conn.close()
 
 def mark_failed(message_id: int, error: str) -> None:
-    """Mark a message as failed and increment retry count."""
+    \"\"\"Mark a message as failed and increment retry count.\"\"\"
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
             conn.execute(
-                """
+                \"\"\"
                 UPDATE scheduled_messages 
                 SET status = 'failed', error_message = ?, retry_count = retry_count + 1 
                 WHERE id = ?
-                """,
+                \"\"\",
                 (error, message_id),
             )
     finally:
         conn.close()
 
 def list_pending_messages() -> List[ScheduledMessage]:
-    """List all pending messages."""
+    \"\"\"List all pending messages.\"\"\"
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         cursor = conn.execute(
-            """
+            \"\"\"
             SELECT id, target, target_type, scheduled_time, message, status, 
                    retry_count, created_at, sent_at, error_message 
             FROM scheduled_messages WHERE status = 'pending'
-            """,
+            \"\"\",
         )
         return [_row_to_scheduled_message(row) for row in cursor.fetchall()]
     finally:
         conn.close()
 
 def _row_to_scheduled_message(row: tuple) -> ScheduledMessage:
-    """Helper to convert database row to ScheduledMessage model."""
+    \"\"\"Helper to convert database row to ScheduledMessage model with decryption.\"\"\"
+    try:
+        decrypted_message = decrypt_message(row[4])
+    except Exception:
+        # Fallback for messages that might have been stored in plain text before encryption was enabled
+        decrypted_message = row[4]
+
     return ScheduledMessage(
         id=row[0],
         target=row[1],
         target_type=row[2],
         scheduled_time=datetime.fromisoformat(row[3]),
-        message=row[4],
+        message=decrypted_message,
         status=row[5],
         retry_count=row[6],
         created_at=datetime.fromisoformat(row[7]),
@@ -145,5 +179,5 @@ def _row_to_scheduled_message(row: tuple) -> ScheduledMessage:
     )
 
 def get_db_connection():
-    """Return a sqlite3 connection."""
+    \"\"\"Return a sqlite3 connection.\"\"\"
     return sqlite3.connect(Config.DB_PATH)
