@@ -1,21 +1,22 @@
 # Project Progress
 
 ## Current Phase
-Quality — Full system validation and regression testing.
+Iteration — Enhancing CLI capabilities and implementing security constraints.
 
 ## What Was Completed This Cycle
-- PR #35 (Telethon import fixes) has been merged.
-- Work plan set for QA to perform final end-to-end validation.
+- [x] Full system end-to-end validation (Issue #34).
+- [x] Final stability checks on the core scheduling loop.
 
 ## What Is In Progress
-- [#34] [QA] Full System End-to-End Validation and Testing.
+- Transitioning from Quality phase to Iteration phase.
 
 ## What Is Blocked
 - None.
 
 ## Next Cycle Plan
-- QA to complete full system validation and report any regressions.
-- Final sign-off on the working CLI if tests pass.
+- Implement missing CLI commands: `list` and `cancel`.
+- Convert interactive CLI to support command-line arguments as per product spec.
+- Implement AES-256 encryption for message content in SQLite.
 
 ## Module Checklist
 - [x] Config loader (.env, python-dotenv)
@@ -28,3 +29,6 @@ Quality — Full system validation and regression testing.
 - [x] Main CLI (parse → confirm → schedule)
 - [x] Logging (activity.log, errors.log)
 - [x] Tests (mocked LLM, mocked Telegram, temp DB)
+- [ ] CLI: `list` and `cancel` commands
+- [ ] CLI: Command-line argument support (argparse)
+- [ ] Security: AES-256 encryption for DB messages

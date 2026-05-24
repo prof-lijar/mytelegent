@@ -1,7 +1,7 @@
 {
-  "cycle_reasoning": "Focus on final E2E validation by QA to ensure the system is stable after the recent recovery and fixes.",
-  "current_phase": "quality",
+  "cycle_reasoning": "Transition to Iteration phase to implement missing security (AES-256) and CLI commands (list/cancel) as per product spec.",
+  "current_phase": "iteration",
   "assignments": [
-    {"role": "qa", "turns": 4, "priority": "P0"}
+    {"role": "backend", "turns": 4, "priority": "P0"}
   ]
 }
