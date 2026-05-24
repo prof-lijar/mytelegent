@@ -20,6 +20,9 @@ class Config:
     TELEGRAM_API_ID: Optional[str] = os.getenv("TELEGRAM_API_ID")
     TELEGRAM_API_HASH: Optional[str] = os.getenv("TELEGRAM_API_HASH")
 
+    # Encryption Settings
+    SECRET_KEY: Optional[str] = os.getenv("SECRET_KEY")
+
     # Database Settings
     DB_PATH: str = os.getenv("SQLITE_DB_PATH", "database/messages.db")
     
