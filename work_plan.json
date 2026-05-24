@@ -1,8 +1,7 @@
 {
-  "cycle_reasoning": "Merge critical Telethon fix (PR #35) and proceed with full system E2E validation (#34).",
+  "cycle_reasoning": "Focus on final E2E validation by QA to ensure the system is stable after the recent recovery and fixes.",
   "current_phase": "quality",
   "assignments": [
-    {"role": "architect", "turns": 1, "priority": "P0"},
-    {"role": "qa", "turns": 2, "priority": "P0"}
+    {"role": "qa", "turns": 4, "priority": "P0"}
   ]
 }
