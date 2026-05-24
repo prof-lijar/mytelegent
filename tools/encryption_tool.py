@@ -2,59 +2,43 @@ from __future__ import annotations
 
 import base64
 from cryptography.fernet import Fernet
-from typing import Optional
-
 from tools.config import Config
 
 class MessageEncryptor:
-    \"\"\"Handles AES-256 encryption and decryption of messages using Fernet.\"\"\"
-    
-    def __init__(self, key: Optional[str] = None):
-        \"\"\"Initialize the encryptor with a key from config or provided key.\"\"\"
-        self._key = key or Config.SECRET_KEY
-        if not self._key:
-            # We don't raise here to allow the module to be imported without crashing.
-            # We will raise when encrypt/decrypt is actually called.
-            self._fernet: Optional[Fernet] = None
-        else:
-            try:
-                self._fernet = Fernet(self._key.encode())
-            except Exception as e:
-                raise ValueError(f\"Invalid SECRET_KEY. It must be a base64-encoded 32-byte key. {e}\")
+    \"\"\"Handles encryption and decryption of messages using AES-256 (Fernet).\"\"\"
 
-    def _ensure_initialized(self) -> None:
-        \"\"\"Ensure the Fernet instance is created.\"\"\"
-        if self._fernet is None:
-            if not Config.SECRET_KEY:
-                raise EnvironmentError(\"SECRET_KEY must be set in the environment for encryption.\")
-            try:
-                self._fernet = Fernet(Config.SECRET_KEY.encode())
-            except Exception as e:
-                raise ValueError(f\"Invalid SECRET_KEY. It must be a base64-encoded 32-byte key. {e}\")
+    def __init__(self) -> None:
+        if not Config.SECRET_KEY:
+            # In a real production environment, we should raise an error.
+            # For local development, we can provide a fallback or a warning.
+            # But the requirement is to use SECRET_KEY from .env.
+            raise EnvironmentError(\"SECRET_KEY must be set in the environment for message encryption.\")
+        
+        # Fernet keys must be 32 url-safe base64-encoded bytes.
+        # If the provided SECRET_KEY is not in the correct format, we attempt to derive one.
+        try:
+            self.fernet = Fernet(Config.SECRET_KEY.encode())
+        except Exception:
+            # This is a fallback to ensure we have a valid key if the user provided a plain string.
+            # In a strict environment, we'd demand a valid Fernet key.
+            import hashlib
+            key = hashlib.sha256(Config.SECRET_KEY.encode()).digest()
+            encoded_key = base64.urlsafe_b64encode(key)
+            self.fernet = Fernet(encoded_key)
 
     def encrypt(self, text: str) -> str:
-        \"\"\"Encrypt a plain text string and return a base64-encoded encrypted string.\"\"\"
+        \"\"\"Encrypt a plain text string.\"\"\"
         if not text:
             return text
-        self._ensure_initialized()
-        return self._fernet!.encrypt(text.encode()).decode()
+        return self.fernet.encrypt(text.encode()).decode()
 
-    def decrypt(self, encrypted_text: str) -> str:
-        \"\"\"Decrypt a base64-encoded encrypted string and return plain text.\"\"\"
-        if not encrypted_text:
-            return encrypted_text
-        self._ensure_initialized()
+    def decrypt(self, token: str) -> str:
+        \"\"\"Decrypt an encrypted token string.\"\"\"
+        if not token:
+            return token
         try:
-            return self._fernet!.decrypt(encrypted_text.encode()).decode()
-        except Exception:
-            # Return original text if decryption fails (e.g. if it was plain text)
-            # This is important for backward compatibility during migration.
-            return encrypted_text
-
-    @staticmethod
-    def generate_key() -> str:
-        \"\"\"Generate a new Fernet key.\"\"\"
-        return Fernet.generate_key().decode()
-
-# Singleton instance for use across the application
-encryptor = MessageEncryptor()
+            return self.fernet.decrypt(token.encode()).decode()
+        except Exception as e:
+            # If decryption fails (e.g. data was not encrypted or key changed), 
+            # we return the original text to avoid crashing, but in a real app we might log this.
+            return token

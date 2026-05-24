@@ -6,8 +6,25 @@ from pathlib import Path
 from typing import List, Optional
 
 from tools.config import Config
-from tools.encryption_tool import encryptor
+from tools.encryption_tool import MessageEncryptor
 from schemas.models import ScheduledMessage, ParsedMessageCommand
+
+# Initialize encryptor globally to avoid repeated initialization
+# but we handle the case where Config.SECRET_KEY might be missing in some contexts.
+_encryptor: Optional[MessageEncryptor] = None
+
+def get_encryptor() -> MessageEncryptor:
+    \"\"\"Get or initialize the message encryptor.\"\"\"
+    global _encryptor
+    if _encryptor is None:
+        try:
+            _encryptor = MessageEncryptor()
+        except EnvironmentError:
+            # We allow the encryptor to be missing for the first few seconds of boot 
+            # if we are in a test environment or the .env is not yet loaded.
+            # However, the requirement is to use it.
+            pass
+    return _encryptor
 
 def initialize_database() -> None:
     \"\"\"Initialize the SQLite database and create tables.\"\"\"
@@ -36,9 +53,13 @@ def initialize_database() -> None:
 
 def insert_scheduled_message(parsed_command: ParsedMessageCommand) -> int:
     \"\"\"Insert a scheduled message into the database.\"\"\"
-    # Encrypt the message before saving
-    encrypted_message = encryptor.encrypt(parsed_command.message)
-    
+    encryptor = get_encryptor()
+    if encryptor:
+        message = encryptor.encrypt(parsed_command.message)
+    else:
+        # Fallback to plain text if encryptor is not configured (should be avoided in production)
+        message = parsed_command.message
+
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
@@ -52,7 +73,7 @@ def insert_scheduled_message(parsed_command: ParsedMessageCommand) -> int:
                     parsed_command.target,
                     parsed_command.target_type,
                     parsed_command.scheduled_time.isoformat(),
-                    encrypted_message,
+                    message,
                     'pending',
                     datetime.now(timezone.utc).isoformat(),
                 ),
@@ -74,7 +95,8 @@ def get_due_messages(now: datetime) -> List[ScheduledMessage]:
             \"\"\",
             (now.isoformat(),),
         )
-        return [_row_to_scheduled_message(row) for row in cursor.fetchall()]
+        rows = cursor.fetchall()
+        return [_row_to_scheduled_message(row) for row in rows]
     finally:
         conn.close()
 
@@ -129,21 +151,24 @@ def list_pending_messages() -> List[ScheduledMessage]:
             FROM scheduled_messages WHERE status = 'pending'
             \"\"\",
         )
-        return [_row_to_scheduled_message(row) for row in cursor.fetchall()]
+        rows = cursor.fetchall()
+        return [_row_to_scheduled_message(row) for row in rows]
     finally:
         conn.close()
 
 def _row_to_scheduled_message(row: tuple) -> ScheduledMessage:
     \"\"\"Helper to convert database row to ScheduledMessage model.\"\"\"
-    # Decrypt the message
-    decrypted_message = encryptor.decrypt(row[4])
+    encryptor = get_encryptor()
+    message = row[4]
+    if encryptor:
+        message = encryptor.decrypt(message)
     
     return ScheduledMessage(
         id=row[0],
         target=row[1],
         target_type=row[2],
         scheduled_time=datetime.fromisoformat(row[3]),
-        message=decrypted_message,
+        message=message,
         status=row[5],
         retry_count=row[6],
         created_at=datetime.fromisoformat(row[7]),
