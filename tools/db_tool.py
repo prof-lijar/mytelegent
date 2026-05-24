@@ -129,6 +129,19 @@ def list_pending_messages() -> List[ScheduledMessage]:
     finally:
         conn.close()
 
+def cancel_message(message_id: int) -> bool:
+    """Cancel a scheduled message by ID."""
+    conn = sqlite3.connect(Config.DB_PATH)
+    try:
+        with conn:
+            cursor = conn.execute(
+                "UPDATE scheduled_messages SET status = 'cancelled' WHERE id = ? AND status = 'pending'",
+                (message_id,),
+            )
+            return cursor.rowcount > 0
+    finally:
+        conn.close()
+
 def _row_to_scheduled_message(row: tuple) -> ScheduledMessage:
     """Helper to convert database row to ScheduledMessage model."""
     return ScheduledMessage(
