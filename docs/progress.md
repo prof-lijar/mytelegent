@@ -8,15 +8,15 @@ Iteration — Enhancing CLI capabilities and implementing security constraints.
 - [x] Final stability checks on the core scheduling loop.
 
 ## What Is In Progress
-- Transitioning from Quality phase to Iteration phase.
+- [ ] Implement AES-256 Encryption for Message Storage (Issue #36)
+- [ ] Enhance CLI to support specific command-line arguments (Issue #37)
 
 ## What Is Blocked
 - None.
 
 ## Next Cycle Plan
-- Implement missing CLI commands: `list` and `cancel`.
-- Convert interactive CLI to support command-line arguments as per product spec.
-- Implement AES-256 encryption for message content in SQLite.
+- Backend to focus on the P0 security task (Encryption) first, then the P1 CLI enhancements.
+- Architect to provide guidance if encryption implementation requires schema changes.
 
 ## Module Checklist
 - [x] Config loader (.env, python-dotenv)
