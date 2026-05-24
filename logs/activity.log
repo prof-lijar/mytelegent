@@ -128,3 +128,18 @@
 2026-05-24 20:36:31,460 - scheduler_agent - INFO - [Backend] Scheduler started. Checking every 60 seconds.
 2026-05-24 20:36:31,460 - scheduler_agent - INFO - [Backend] Scheduler shut down.
 2026-05-24 20:36:31,463 - telegram_tool - INFO - Successfully sent message to test_user
+2026-05-24 21:06:52,409 - main_cli - INFO - User input received via CLI: Tell Jisoo tomorrow at 9 AM that I finished the report
+2026-05-24 21:06:52,533 - main_cli - INFO - Successfully scheduled message 1 for Jisoo
+2026-05-24 21:06:52,535 - scheduler_agent - INFO - [Backend] Found 1 due messages to process.
+2026-05-24 21:06:52,661 - scheduler_agent - INFO - [Backend] Attempting to send message 1 to Jisoo (Retry: 0).
+2026-05-24 21:06:52,789 - scheduler_agent - INFO - [Backend] Successfully sent message 1 to Jisoo.
+2026-05-24 21:06:52,799 - scheduler_agent - INFO - [Backend] Found 1 due messages to process.
+2026-05-24 21:06:52,799 - scheduler_agent - INFO - [Backend] Attempting to send message 1 to @testuser (Retry: 0).
+2026-05-24 21:06:52,799 - scheduler_agent - INFO - [Backend] Successfully sent message 1 to @testuser.
+2026-05-24 21:06:52,800 - scheduler_agent - INFO - [Backend] Found 1 due messages to process.
+2026-05-24 21:06:52,800 - scheduler_agent - INFO - [Backend] Attempting to send message 2 to @failuser (Retry: 0).
+2026-05-24 21:06:52,802 - scheduler_agent - INFO - [Backend] Found 1 due messages to process.
+2026-05-24 21:06:52,803 - scheduler_agent - INFO - [Backend] Attempting to send message 3 to @maxuser (Retry: 2).
+2026-05-24 21:06:52,804 - scheduler_agent - INFO - [Backend] Scheduler started. Checking every 60 seconds.
+2026-05-24 21:06:52,804 - scheduler_agent - INFO - [Backend] Scheduler shut down.
+2026-05-24 21:06:52,807 - telegram_tool - INFO - Successfully sent message to test_user
