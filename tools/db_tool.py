@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from tools.config import Config
-from tools.encryption_tool import get_encryptor
+from tools.encryption_tool import encryption_tool
 from schemas.models import ScheduledMessage, ParsedMessageCommand
 
 def initialize_database() -> None:
@@ -35,10 +35,8 @@ def initialize_database() -> None:
         conn.close()
 
 def insert_scheduled_message(parsed_command: ParsedMessageCommand) -> int:
-    \"\"\"Insert a scheduled message into the database.\"\"\"
-    encryptor = get_encryptor()
-    encrypted_message = encryptor.encrypt(parsed_command.message)
-    
+    \"\"\"Insert a scheduled message into the database with encrypted content.\"\"\"
+    encrypted_message = encryption_tool.encrypt(parsed_command.message)
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
@@ -62,7 +60,7 @@ def insert_scheduled_message(parsed_command: ParsedMessageCommand) -> int:
         conn.close()
 
 def get_due_messages(now: datetime) -> List[ScheduledMessage]:
-    \"\"\"Get messages that are due for sending.\"\"\"
+    \"\"\"Get messages that are due for sending and decrypt the content.\"\"\"
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         cursor = conn.execute(
@@ -92,7 +90,7 @@ def mark_processing(message_id: int) -> None:
         conn.close()
 
 def mark_sent(message_id: int) -> None:
-    \"\"\"Mark a message as sent.\"\"\"
+    \"\"\"C\"\"\"Mark a message as sent.\"\"\"
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
@@ -120,7 +118,7 @@ def mark_failed(message_id: int, error: str) -> None:
         conn.close()
 
 def list_pending_messages() -> List[ScheduledMessage]:
-    \"\"\"List all pending messages.\"\"\"
+    \"\"\"List all pending messages and decrypt the content.\"\"\"
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         cursor = conn.execute(
@@ -134,25 +132,19 @@ def list_pending_messages() -> List[ScheduledMessage]:
         return [_row_to_scheduled_message(row) for row in rows]
     finally:
         conn.close()
-    
+
 def _row_to_scheduled_message(row: tuple) -> ScheduledMessage:
-    \"\"\"Helper to convert database row to ScheduledMessage model.\"\"\"
-    encryptor = get_encryptor()
-    decrypted_message = encryptor.decrypt(row[4])
-    
+    \"\"\"Helper to convert database row to ScheduledMessage model and decrypt the message.\"\"\"
     return ScheduledMessage(
         id=row[0],
         target=row[1],
         target_type=row[2],
         scheduled_time=datetime.fromisoformat(row[3]),
-        message=decrypted_message,
+        message=encryption_tool.decrypt(row[4]),
         status=row[5],
         retry_count=row[6],
         created_at=datetime.fromisoformat(row[7]),
         sent_at=datetime.fromisoformat(row[8]) if row[8] else None,
         error_message=row[9],
     )
-
-def get_db_connection():
-    \"\"\"Return a sqlite3 connection.\"\"\"
-    return sqlite3.connect(Config.DB_PATH)
+# No need to get_db_connection here since we's using sqlite3.connect(Config.DB_PATH) directly

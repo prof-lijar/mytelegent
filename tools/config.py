@@ -23,7 +23,7 @@ class Config:
     # Database Settings
     DB_PATH: str = os.getenv(\"SQLITE_DB_PATH\", \"database/messages.db\")
     
-    # Security Settings
+    # Encryption Settings
     SECRET_KEY: Optional[str] = os.getenv(\"SECRET_KEY\")
     
     # General Settings

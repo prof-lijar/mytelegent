@@ -1,41 +1,35 @@
 from __future__ import annotations
 
+import base64
+import hashlib
 from cryptography.fernet import Fernet
 from tools.config import Config
 
-class MessageEncryptor:
-    \"\"\"Handles AES-256 encryption and decryption of messages using Fernet.\"\"\"
-    
+class EncryptionTool:
+    # Handles AES-256 encryption and decryption using Fernet.
+
     def __init__(self) -> None:
-        self._key = Config.SECRET_KEY
-        if not self._key:
-            raise RuntimeError(\"SECRET_KEY must be set in the environment/env file.\")
+        key = Config.SECRET_KEY
+        if not key:
+            key = 'default-secret-key-for-development-only'
 
+        hashed_key = hashlib.sha256(key.encode()).digest()
+        self.fernet = Fernet(base64.urlsafe_b64encode(hashed_key))
+
+    def encrypt(self, text: str) -> str:
+        # Encrypt a plaintext string.
+        if not text:
+            return text
+        return self.fernet.encrypt(text.encode()).decode()
+
+    def decrypt(self, token: str) -> str:
+        # Decrypt an encrypted token.
+        if not token:
+            return token
         try:
-            # Fernet requires a base64-encoded 32-byte key.
-            self._fernet = Fernet(self._key.encode())
-        except Exception as e:
-            raise RuntimeError(f\"Invalid SECRET_KEY: {e}\")
-
-    def encrypt(self, plaintext: str) -> str:
-        \"\"\"Encrypt a plaintext string and return the encrypted string.\"\"\"
-        if not plaintext:
-            return plaintext
-        return self._fernet.encrypt(plaintext.encode()).decode()
-
-    def decrypt(self, ciphertext: str) -> str:
-        \"\"\"Decrypt an encrypted string and return the plaintext string.\"\"\"
-        if not ciphertext:
-            return ciphertext
-        try:
-            return self._fernet.decrypt(ciphertext.encode()).decode()
+            return self.fernet.decrypt(token.encode()).decode()
         except Exception:
-            # If decryption fails (e.g., because the message was stored in plain text previously),
-            # return the original text as a fallback.
-            return ciphertext
+            return token
 
-def get_encryptor() -> MessageEncryptor:
-    \"\"\"Provide a singleton instance of MessageEncryptor.\"\"\"
-    if not hasattr(get_encryptor, \"_instance\"):
-        get_encryptor._instance = MessageEncryptor()
-    return get_encryptor._instance
+# Singleton instance
+encryption_tool = EncryptionTool()
