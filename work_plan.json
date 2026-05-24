@@ -1,5 +1,5 @@
 {
-  "cycle_reasoning": "Reviewing and merging PR #39 which implements critical CLI enhancements (list, cancel, and argparse support).",
+  "cycle_reasoning": "Review and merge PR #39 to enhance CLI with list/cancel commands and argparse support.",
   "current_phase": "iteration",
   "assignments": [
     {"role": "qa", "turns": 2, "priority": "P0"},
