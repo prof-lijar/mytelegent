@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from tools.config import Config
+from tools.encryption_tool import encryption_tool
 from schemas.models import ScheduledMessage, ParsedMessageCommand
 
 def initialize_database() -> None:
@@ -34,7 +35,8 @@ def initialize_database() -> None:
         conn.close()
 
 def insert_scheduled_message(parsed_command: ParsedMessageCommand) -> int:
-    """Insert a scheduled message into the database."""
+    """Insert a scheduled message into the database, encrypting the message content."""
+    encrypted_message = encryption_tool.encrypt(parsed_command.message)
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
@@ -48,8 +50,8 @@ def insert_scheduled_message(parsed_command: ParsedMessageCommand) -> int:
                     parsed_command.target,
                     parsed_command.target_type,
                     parsed_command.scheduled_time.isoformat(),
-                    parsed_command.message,
-                    'pending',
+                    encrypted_message,
+                    \'pending\',
                     datetime.now(timezone.utc).isoformat(),
                 ),
             )
@@ -58,7 +60,7 @@ def insert_scheduled_message(parsed_command: ParsedMessageCommand) -> int:
         conn.close()
 
 def get_due_messages(now: datetime) -> List[ScheduledMessage]:
-    """Get messages that are due for sending."""
+    """Get messages that are due for sending, decrypting the message content."""
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         cursor = conn.execute(
@@ -66,11 +68,12 @@ def get_due_messages(now: datetime) -> List[ScheduledMessage]:
             SELECT id, target, target_type, scheduled_time, message, status, 
                    retry_count, created_at, sent_at, error_message 
             FROM scheduled_messages 
-            WHERE status = 'pending' AND scheduled_time <= ?
+            WHERE status = \'pending\' AND scheduled_time <= ?
             """,
             (now.isoformat(),),
         )
-        return [_row_to_scheduled_message(row) for row in cursor.fetchall()]
+        rows = cursor.fetchall()
+        return [_row_to_scheduled_message(row) for row in rows]
     finally:
         conn.close()
 
@@ -80,7 +83,7 @@ def mark_processing(message_id: int) -> None:
     try:
         with conn:
             conn.execute(
-                "UPDATE scheduled_messages SET status = 'processing' WHERE id = ?",
+                "UPDATE scheduled_messages SET status = \'processing\' WHERE id = ?",
                 (message_id,),
             )
     finally:
@@ -92,7 +95,7 @@ def mark_sent(message_id: int) -> None:
     try:
         with conn:
             conn.execute(
-                "UPDATE scheduled_messages SET status = 'sent', sent_at = ? WHERE id = ?",
+                "UPDATE scheduled_messages SET status = \'sent\', sent_at = ? WHERE id = ?",
                 (datetime.now(timezone.utc).isoformat(), message_id),
             )
     finally:
@@ -106,7 +109,7 @@ def mark_failed(message_id: int, error: str) -> None:
             conn.execute(
                 """
                 UPDATE scheduled_messages 
-                SET status = 'failed', error_message = ?, retry_count = retry_count + 1 
+                SET status = \'failed\', error_message = ?, retry_count = retry_count + 1 
                 WHERE id = ?
                 """,
                 (error, message_id),
@@ -115,28 +118,35 @@ def mark_failed(message_id: int, error: str) -> None:
         conn.close()
 
 def list_pending_messages() -> List[ScheduledMessage]:
-    """List all pending messages."""
+    """List all pending messages, decrypting the message content."""
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         cursor = conn.execute(
             """
             SELECT id, target, target_type, scheduled_time, message, status, 
                    retry_count, created_at, sent_at, error_message 
-            FROM scheduled_messages WHERE status = 'pending'
+            FROM scheduled_messages WHERE status = \'pending\'
             """,
         )
-        return [_row_to_scheduled_message(row) for row in cursor.fetchall()]
+        rows = cursor.fetchall()
+        return [_row_to_scheduled_message(row) for row in rows]
     finally:
         conn.close()
 
 def _row_to_scheduled_message(row: tuple) -> ScheduledMessage:
-    """Helper to convert database row to ScheduledMessage model."""
+    """Helper to convert database row to ScheduledMessage model, decrypting the message."""
+    encrypted_message = row[4]
+    try:
+        decrypted_message = encryption_tool.decrypt(encrypted_message)
+    except Exception as e:
+        decrypted_message = f"[Decryption Error: {e}]"
+        
     return ScheduledMessage(
         id=row[0],
         target=row[1],
         target_type=row[2],
         scheduled_time=datetime.fromisoformat(row[3]),
-        message=row[4],
+        message=decrypted_message,
         status=row[5],
         retry_count=row[6],
         created_at=datetime.fromisoformat(row[7]),
