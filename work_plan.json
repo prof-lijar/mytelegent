@@ -1,8 +1,9 @@
 {
-  "cycle_reasoning": "Prioritizing P0 security (AES-256 Encryption) and P1 CLI enhancements to align with product specifications.",
+  "cycle_reasoning": "Focusing on P0 security (AES-256 encryption) and P1 CLI enhancements to move the product towards a production-ready state.",
   "current_phase": "iteration",
   "assignments": [
     {"role": "backend", "turns": 4, "priority": "P0"},
-    {"role": "architect", "turns": 1, "priority": "P1"}
+    {"role": "architect", "turns": 1, "priority": "P1"},
+    {"role": "qa", "turns": 1, "priority": "P1"}
   ]
 }
