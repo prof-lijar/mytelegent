@@ -37,9 +37,10 @@ def test_e2e_flow():
     
     # 2. Mock the ParsingAgent to avoid LLM calls
     # 3. Mock the async send_telegram_message function
+    # NOTE: We patch 'agents.scheduler_agent.send_telegram_message' because it's imported directly there
     with patch('builtins.input', side_effect=inputs), \
          patch('agents.parsing_agent.ParsingAgent.parse_command', return_value=MOCK_PARSED), \
-         patch('tools.telegram_tool.send_telegram_message', new_callable=AsyncMock) as mock_send, \
+         patch('agents.scheduler_agent.send_telegram_message', new_callable=AsyncMock) as mock_send, \
          patch('tools.logging_tool.get_logger'):
         
         mock_send.return_value = {"success": True}
