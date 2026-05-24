@@ -404,3 +404,49 @@ Traceback (most recent call last):
   File "/home/orchestor/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/unittest/mock.py", line 2240, in _execute_mock_call
     raise effect
 Exception: Generic Error
+2026-05-24 20:24:38,037 - parsing_agent - ERROR - Parsing failed for input Something weird: Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "/mnt/hdd1/orchestor/lidev/orchast_agent/tiny-jarvis/product-repo/agents/parsing_agent.py", line 45, in parse_command
+    data = json.loads(cleaned_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/orchestor/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/orchestor/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/orchestor/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+2026-05-24 20:24:38,039 - parsing_agent - ERROR - Parsing failed for input Send Hello to Bob: 2 validation errors for ParsedMessageCommand
+target_type
+  Input should be 'name', 'username' or 'phone' [type=literal_error, input_value='invalid_type', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.12/v/literal_error
+confidence
+  Input should be less than or equal to 1 [type=less_than_equal, input_value=1.5, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.12/v/less_than_equal
+Traceback (most recent call last):
+  File "/mnt/hdd1/orchestor/lidev/orchast_agent/tiny-jarvis/product-repo/agents/parsing_agent.py", line 46, in parse_command
+    return ParsedMessageCommand(**data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd1/orchestor/lidev/orchast_agent/tiny-jarvis/.venv/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 2 validation errors for ParsedMessageCommand
+target_type
+  Input should be 'name', 'username' or 'phone' [type=literal_error, input_value='invalid_type', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.12/v/literal_error
+confidence
+  Input should be less than or equal to 1 [type=less_than_equal, input_value=1.5, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.12/v/less_than_equal
+2026-05-24 20:24:38,042 - parsing_agent - ERROR - Parsing prompt file not found. Falling back to a basic prompt.
+2026-05-24 20:24:38,046 - scheduler_agent - WARNING - [Backend] Message 2 failed. Retrying (1/2). Error: API Error
+2026-05-24 20:24:38,048 - scheduler_agent - ERROR - [Backend] Message 3 failed permanently after 2 retries. Error: Persistent Error
+2026-05-24 20:24:38,054 - telegram_tool - ERROR - Invalid user ID or username: invalid_user
+2026-05-24 20:24:38,056 - telegram_tool - ERROR - Unexpected error sending message to test_user: Generic Error
+Traceback (most recent call last):
+  File "/mnt/hdd1/orchestor/lidev/orchast_agent/tiny-jarvis/product-repo/tools/telegram_tool.py", line 37, in send_telegram_message
+    await client.send_message(target, message)
+  File "/home/orchestor/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/unittest/mock.py", line 2240, in _execute_mock_call
+    raise effect
+Exception: Generic Error
