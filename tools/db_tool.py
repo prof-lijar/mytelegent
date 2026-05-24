@@ -12,7 +12,7 @@ from tools.config import Config
 from schemas.models import ScheduledMessage, ParsedMessageCommand
 
 def _get_cipher() -> Fernet:
-    """Initialize Fernet cipher using the SECRET_KEY from config."""
+    # Initialize Fernet cipher using the SECRET_KEY from config.
     key_str = Config.SECRET_KEY
     if not key_str:
         raise EnvironmentError("SECRET_KEY must be set in the environment for message encryption.")
@@ -23,52 +23,35 @@ def _get_cipher() -> Fernet:
     return Fernet(base64_key)
 
 def encrypt_message(text: str) -> str:
-    """Encrypt a plain text string."""
+    # Encrypt a plain text string.
     cipher = _get_cipher()
     return cipher.encrypt(text.encode()).decode()
 
 def decrypt_message(token: str) -> str:
-    """Decrypt an encrypted token string."""
+    # Decrypt an encrypted token string.
     cipher = _get_cipher()
     return cipher.decrypt(token.encode()).decode()
 
 def initialize_database() -> None:
-    """Initialize the SQLite database and create tables."""
+    # Initialize the SQLite database and create tables.
     Config.ensure_db_dir()
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
             conn.execute(
-                """
-                CREATE TABLE IF NOT EXISTS scheduled_messages (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    target TEXT NOT NULL,
-                    target_type TEXT NOT NULL,
-                    scheduled_time TEXT NOT NULL,
-                    message TEXT NOT NULL,
-                    status TEXT NOT NULL,
-                    retry_count INTEGER DEFAULT 0,
-                    created_at TEXT NOT NULL,
-                    sent_at TEXT,
-                    error_message TEXT
-                )
-                """,
+                "CREATE TABLE IF NOT EXISTS scheduled_messages (id INTEGER PRIMARY KEY AUTOINCREMENT, target TEXT NOT NULL, target_type TEXT NOT NULL, scheduled_time TEXT NOT NULL, message TEXT NOT NULL, status TEXT NOT NULL, retry_count INTEGER DEFAULT 0, created_at TEXT NOT NULL, sent_at TEXT, error_message TEXT)",
             )
     finally:
         conn.close()
 
 def insert_scheduled_message(parsed_command: ParsedMessageCommand) -> int:
-    """Insert a scheduled message into the database with encryption."""
+    # Insert a scheduled message into the database with encryption.
     encrypted_msg = encrypt_message(parsed_command.message)
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
             cursor = conn.execute(
-                """
-                INSERT INTO scheduled_messages (
-                    target, target_type, scheduled_time, message, status, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?)
-                """,
+                "INSERT INTO scheduled_messages (target, target_type, scheduled_time, message, status, created_at) VALUES (?, ?, ?, ?, ?, ?)",
                 (
                     parsed_command.target,
                     parsed_command.target_type,
@@ -83,16 +66,11 @@ def insert_scheduled_message(parsed_command: ParsedMessageCommand) -> int:
         conn.close()
 
 def get_due_messages(now: datetime) -> List[ScheduledMessage]:
-    """Get messages that are due for sending and decrypt them."""
+    # Get messages that are due for sending and decrypt them.
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         cursor = conn.execute(
-            """
-            SELECT id, target, target_type, scheduled_time, message, status, 
-                   retry_count, created_at, sent_at, error_message 
-            FROM scheduled_messages 
-            WHERE status = 'pending' AND scheduled_time <= ?
-            """,
+            "SELECT id, target, target_type, scheduled_time, message, status, retry_count, created_at, sent_at, error_message FROM scheduled_messages WHERE status = 'pending' AND scheduled_time <= ?",
             (now.isoformat(),),
         )
         return [_row_to_scheduled_message(row) for row in cursor.fetchall()]
@@ -100,7 +78,7 @@ def get_due_messages(now: datetime) -> List[ScheduledMessage]:
         conn.close()
 
 def mark_processing(message_id: int) -> None:
-    """Mark a message as processing."""
+    # Mark a message as processing.
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
@@ -112,7 +90,7 @@ def mark_processing(message_id: int) -> None:
         conn.close()
 
 def mark_sent(message_id: int) -> None:
-    """Mark a message as sent."""
+    # Mark a message as sent.
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
@@ -124,51 +102,43 @@ def mark_sent(message_id: int) -> None:
         conn.close()
 
 def mark_failed(message_id: int, error: str) -> None:
-    """Mark a message as failed and increment retry count."""
+    # Mark a message as failed and increment retry count.
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
             conn.execute(
-                """
-                UPDATE scheduled_messages 
-                SET status = 'failed', error_message = ?, retry_count = retry_count + 1 
-                WHERE id = ?
-                """,
+                "UPDATE scheduled_messages SET status = 'failed', error_message = ?, retry_count = retry_count + 1 WHERE id = ?",
                 (error, message_id),
             )
     finally:
         conn.close()
 
-def list_pending_messages() -> List[ScheduledMessage]:
-    """List all pending messages and decrypt them."""
-    conn = sqlite3.connect(Config.DB_PATH)
-    try:
-        cursor = conn.execute(
-            """
-            SELECT id, target, target_type, scheduled_time, message, status, 
-                   retry_count, created_at, sent_at, error_message 
-            FROM scheduled_messages WHERE status = 'pending'
-            """,
-        )
-        return [_row_to_scheduled_message(row) for row in cursor.fetchall()]
-    finally:
-        conn.close()
-
 def cancel_message(message_id: int) -> bool:
-    """Mark a message as cancelled."""
+    # Cancel a scheduled message by marking it as cancelled.
     conn = sqlite3.connect(Config.DB_PATH)
     try:
         with conn:
             cursor = conn.execute(
-                "UPDATE scheduled_messages SET status = 'cancelled' WHERE id = ?",
+                "UPDATE scheduled_messages SET status = 'cancelled' WHERE id = ? AND status = 'pending'",
                 (message_id,),
             )
             return cursor.rowcount > 0
     finally:
         conn.close()
 
+def list_pending_messages() -> List[ScheduledMessage]:
+    # List all pending messages and decrypt them.
+    conn = sqlite3.connect(Config.DB_PATH)
+    try:
+        cursor = conn.execute(
+            "SELECT id, target, target_type, scheduled_time, message, status, retry_count, created_at, sent_at, error_message FROM scheduled_messages WHERE status = 'pending'",
+        )
+        return [_row_to_scheduled_message(row) for row in cursor.fetchall()]
+    finally:
+        conn.close()
+
 def _row_to_scheduled_message(row: tuple) -> ScheduledMessage:
-    """Helper to convert database row to ScheduledMessage model, decrypting the message."""
+    # Helper to convert database row to ScheduledMessage model, decrypting the message.
     return ScheduledMessage(
         id=row[0],
         target=row[1],
@@ -183,5 +153,5 @@ def _row_to_scheduled_message(row: tuple) -> ScheduledMessage:
     )
 
 def get_db_connection():
-    """Return a sqlite3 connection."""
+    # Return a sqlite3 connection.
     return sqlite3.connect(Config.DB_PATH)

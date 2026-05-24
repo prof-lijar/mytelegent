@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import sys
 import asyncio
+from typing import List, Optional
 from datetime import datetime
 from tools.db_tool import initialize_database, insert_scheduled_message, list_pending_messages, cancel_message
 from tools.logging_tool import get_logger
@@ -12,7 +13,7 @@ from agents.scheduler_agent import SchedulerAgent
 logger = get_logger("main_cli")
 
 def handle_schedule(message: str, parser: ParsingAgent) -> None:
-    \"\"\"Handle the scheduling of a message with confirmation flow.\"\"\"
+    """Handle the scheduling of a message with confirmation flow."""
     logger.info(f"Scheduling request received: {message}")
     
     # 1. Parse the command
@@ -29,7 +30,7 @@ def handle_schedule(message: str, parser: ParsingAgent) -> None:
     print(f"Message:   {parsed_command.message}")
     print(f"Time:      {parsed_command.scheduled_time.strftime('%Y-%m-%d %H:%M %Z')}")
     print(f"Confidence: {parsed_command.confidence:.2f}")
-    print("------------------------")
+    print("--------------------------------")
     
     try:
         confirm = input("Confirm scheduling? (y/n): ").strip().lower()
@@ -43,11 +44,11 @@ def handle_schedule(message: str, parser: ParsingAgent) -> None:
         print(f"✅ Success! Message scheduled with ID: {msg_id}")
         logger.info(f"Successfully scheduled message {msg_id} for {parsed_command.target}")
     else:
-        print("🛑 Scheduling cancelled.")
+        print("🚫 Scheduling cancelled.")
         logger.info("User cancelled the scheduling request.")
 
 def handle_list() -> None:
-    \"\"\"List all pending messages.\"\"\"
+    """List all pending messages."""
     messages = list_pending_messages()
     if not messages:
         print("No pending messages found.")
@@ -63,7 +64,7 @@ def handle_list() -> None:
     print("-" * 70)
 
 def handle_cancel(message_id: int) -> None:
-    \"\"\"Cancel a scheduled message by ID.\"\"\"
+    """Cancel a scheduled message by ID."""
     success = cancel_message(message_id)
     if success:
         print(f"✅ Message {message_id} has been cancelled.")
@@ -73,7 +74,7 @@ def handle_cancel(message_id: int) -> None:
         logger.warning(f"Failed to cancel message {message_id}: not found or not pending")
 
 async def run_scheduler_process() -> None:
-    \"\"\"Start the background scheduler process.\"\"\"
+    """Start the background scheduler process."""
     try:
         agent = SchedulerAgent()
         agent.start()
@@ -87,7 +88,7 @@ async def run_scheduler_process() -> None:
         print(f"Unexpected error: {e}")
         sys.exit(1)
 
-def main() -> None:
+def main(argv: Optional[List[str]] = None) -> None:
     # Initialize system
     try:
         initialize_database()
@@ -115,7 +116,7 @@ def main() -> None:
     # Run-scheduler command
     subparsers.add_parser("run-scheduler", help="Start the background scheduler process")
 
-    args = parser_arg.parse_args()
+    args = parser_arg.parse_args(argv)
 
     if args.command == "schedule":
         parsing_agent = ParsingAgent()
@@ -133,4 +134,4 @@ def main() -> None:
         parser_arg.print_help()
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
