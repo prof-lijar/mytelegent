@@ -7,14 +7,14 @@ Iteration — Enhancing CLI capabilities and implementing security constraints.
 - Merged PR #38: [Backend] Implement AES-256 Encryption for Message Storage.
 
 ## What Is In Progress
-- Issue #37: [Backend] Enhance CLI to support specific command-line arguments (In progress)
+- PR #39: [Backend] Enhance CLI to support specific command-line arguments (Under Review)
 
 ## What Is Blocked
 - None.
 
 ## Next Cycle Plan
-- Backend to finalize CLI argument support (Issue #37).
-- QA to verify CLI enhancements once implemented.
+- QA to review and verify PR #39 (CLI `list`, `cancel`, and `argparse` support).
+- Architect to merge PR #39 upon QA approval.
 
 ## Module Checklist
 - [x] Config loader (.env, python-dotenv)
@@ -27,6 +27,6 @@ Iteration — Enhancing CLI capabilities and implementing security constraints.
 - [x] Main CLI (parse → confirm → schedule)
 - [x] Logging (activity.log, errors.log)
 - [x] Tests (mocked LLM, mocked Telegram, temp DB)
-- [ ] CLI: `list` and `cancel` commands
-- [ ] CLI: Command-line argument support (argparse)
+- [ ] CLI: `list` and `cancel` commands (PR #39)
+- [ ] CLI: Command-line argument support (argparse) (PR #39)
 - [x] Security: AES-256 encryption for DB messages
