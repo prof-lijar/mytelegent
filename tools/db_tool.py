@@ -17,7 +17,6 @@ def _get_cipher() -> Fernet:
     if not key_str:
         raise EnvironmentError("SECRET_KEY must be set in the environment for message encryption.")
     
-    # Derive a 32-byte key for Fernet from the provided secret string
     key_bytes = hashlib.sha256(key_str.encode()).digest()
     base64_key = base64.urlsafe_b64encode(key_bytes)
     return Fernet(base64_key)
@@ -151,6 +150,19 @@ def list_pending_messages() -> List[ScheduledMessage]:
             """,
         )
         return [_row_to_scheduled_message(row) for row in cursor.fetchall()]
+    finally:
+        conn.close()
+
+def cancel_message(message_id: int) -> bool:
+    """Mark a message as cancelled."""
+    conn = sqlite3.connect(Config.DB_PATH)
+    try:
+        with conn:
+            cursor = conn.execute(
+                "UPDATE scheduled_messages SET status = 'cancelled' WHERE id = ?",
+                (message_id,),
+            )
+            return cursor.rowcount > 0
     finally:
         conn.close()
 
