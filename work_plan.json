@@ -1,9 +1,7 @@
 {
-  "cycle_reasoning": "Review security encryption implementation (PR #38) and advance CLI enhancements (Issue #37).",
+  "cycle_reasoning": "Backend is finalizing CLI argument support; AES-256 encryption has been merged and is now part of the core.",
   "current_phase": "iteration",
   "assignments": [
-    {"role": "qa", "turns": 2, "priority": "P0"},
-    {"role": "architect", "turns": 1, "priority": "P0"},
     {"role": "backend", "turns": 3, "priority": "P1"}
   ]
 }
