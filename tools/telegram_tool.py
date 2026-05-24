@@ -39,11 +39,11 @@ async def send_telegram_message(target: str, message: str) -> Dict[str, Optional
         logger.info(f"Successfully sent message to {target}")
         return {"success": True, "target": target, "error": None}
 
-    except errors.api.UserIdInvalidError:
+    except errors.UserIdInvalidError:
         err = f"Invalid user ID or username: {target}"
         logger.error(err)
         return {"success": False, "target": target, "error": err}
-    except errors.api.PhoneCodeInvalidError:
+    except errors.PhoneCodeInvalidError:
         err = "Invalid phone code provided for Telegram authentication"
         logger.error(err)
         return {"success": False, "target": target, "error": err}
