@@ -158,3 +158,27 @@
 2026-05-24 21:38:48,095 - scheduler_agent - INFO - [Backend] Scheduler started. Checking every 60 seconds.
 2026-05-24 21:38:48,095 - scheduler_agent - INFO - [Backend] Scheduler shut down.
 2026-05-24 21:38:48,097 - telegram_tool - INFO - Successfully sent message to test_user
+2026-05-24 22:36:37,361 - main_cli - INFO - User input received via CLI: Tell Jisoo tomorrow at 9 AM that I finished the report
+2026-05-24 22:36:37,495 - main_cli - INFO - Successfully scheduled message 1 for Jisoo
+2026-05-24 22:36:37,497 - scheduler_agent - INFO - [Backend] Found 1 due messages to process.
+2026-05-24 22:36:37,623 - scheduler_agent - INFO - [Backend] Attempting to send message 1 to Jisoo (Retry: 0).
+2026-05-24 22:36:37,751 - scheduler_agent - INFO - [Backend] Successfully sent message 1 to Jisoo.
+2026-05-24 22:36:37,761 - scheduler_agent - INFO - [Backend] Found 1 due messages to process.
+2026-05-24 22:36:37,761 - scheduler_agent - INFO - [Backend] Attempting to send message 1 to @testuser (Retry: 0).
+2026-05-24 22:36:37,761 - scheduler_agent - INFO - [Backend] Successfully sent message 1 to @testuser.
+2026-05-24 22:36:37,763 - scheduler_agent - INFO - [Backend] Found 1 due messages to process.
+2026-05-24 22:36:37,763 - scheduler_agent - INFO - [Backend] Attempting to send message 2 to @failuser (Retry: 0).
+2026-05-24 22:36:37,766 - scheduler_agent - INFO - [Backend] Found 1 due messages to process.
+2026-05-24 22:36:37,766 - scheduler_agent - INFO - [Backend] Attempting to send message 3 to @maxuser (Retry: 2).
+2026-05-24 22:36:37,768 - scheduler_agent - INFO - [Backend] Scheduler started. Checking every 60 seconds.
+2026-05-24 22:36:37,768 - scheduler_agent - INFO - [Backend] Scheduler shut down.
+2026-05-24 22:36:37,772 - telegram_tool - INFO - Successfully sent message to test_user
+2026-05-24 22:39:16,189 - main_cli - INFO - User input received via CLI: Tell Alice tomorrow at 9 AM that I am coming
+2026-05-24 22:42:40,692 - main_cli - INFO - User input received via CLI: Tell Alice tomorrow at 9 AM that I am coming
+2026-05-24 22:42:40,849 - main_cli - INFO - Successfully scheduled message 1 for Alice
+2026-05-24 22:42:40,854 - scheduler_agent - INFO - [Backend] Found 1 due messages to process.
+2026-05-24 22:42:41,009 - scheduler_agent - INFO - [Backend] Attempting to send message 1 to Alice (Retry: 0).
+2026-05-24 22:42:41,169 - scheduler_agent - INFO - [Backend] Successfully sent message 1 to Alice.
+2026-05-24 22:42:41,174 - main_cli - INFO - User input received via CLI: Tell Bob I'm late
+2026-05-24 22:42:41,329 - main_cli - INFO - Successfully scheduled message 2 for Bob
+2026-05-24 22:42:41,457 - main_cli - INFO - Cancelled message 2
