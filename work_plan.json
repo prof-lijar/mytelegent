@@ -1,5 +1,9 @@
 {
-  "cycle_reasoning": "Project is in production maintenance mode. No active development required.",
+  "cycle_reasoning": "Project is in maintenance mode; no active development tasks.",
   "current_phase": "iteration",
-  "assignments": []
+  "assignments": [
+    {"role": "architect", "turns": 0, "priority": "P0"},
+    {"role": "backend", "turns": 0, "priority": "P0"},
+    {"role": "qa", "turns": 0, "priority": "P1"}
+  ]
 }
