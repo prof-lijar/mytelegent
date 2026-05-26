@@ -1,5 +1,5 @@
 {
-  "cycle_reasoning": "Maintain production state and verify system stability.",
+  "cycle_reasoning": "System is in maintenance mode; no active development or fixes required this cycle.",
   "current_phase": "iteration",
   "assignments": []
 }
